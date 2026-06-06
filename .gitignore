@@ -1,0 +1,10 @@
+# Arquivo de ambiente — NÃO subir para o GitHub
+.env
+
+# Sistemas operacionais
+.DS_Store
+Thumbs.db
+
+# Editores
+.vscode/
+.idea/
