@@ -3,88 +3,122 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Lions Seminovos — Aprove seu Crédito em 2 Minutos</title>
-  <meta name="description" content="Sem burocracia. Analisamos seu perfil com as principais financeiras parceiras da Lions Seminovos." />
+  <title>Carros Seminovos com Preço Baixo — Indicação Exclusiva</title>
+  <meta name="description" content="Estou indicando os melhores seminovos com preço abaixo do mercado. Veja o estoque e garanta o seu." />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<main class="hero">
-
-  <!-- Lado esquerdo: texto -->
-  <section class="hero-left">
-    <div class="logo-wrapper">
-      <img src="Logo Lions.JPG" alt="Lions Seminovos" />
-    </div>
-
-    <div class="badge">Análise Instantânea</div>
-
-    <h1 class="hero-titulo">
-      Aprove seu crédito para
-      <span>financiamento de carro</span>
-      em 2 minutos.
-    </h1>
-
-    <p class="hero-subtitulo">
-      Sem burocracia. Analisamos seu perfil com as principais financeiras parceiras da Lions Seminovos.
-    </p>
-
-    <div class="hero-stats">
-      <div class="stat">
-        <span class="stat-num">+500</span>
-        <span class="stat-label">Clientes aprovados</span>
-      </div>
-      <div class="stat">
-        <span class="stat-num">2 min</span>
-        <span class="stat-label">Análise rápida</span>
-      </div>
-      <div class="stat">
-        <span class="stat-num">12+</span>
-        <span class="stat-label">Financeiras parceiras</span>
-      </div>
-    </div>
-  </section>
-
-  <!-- Lado direito: formulário -->
-  <section class="hero-right">
-    <div class="form-card">
-      <h2 class="form-titulo">Quero aprovar meu crédito</h2>
-      <p class="form-subtitulo">Preencha abaixo e receba a análise pelo WhatsApp.</p>
-
-      <div class="msg-erro" id="msgErro"></div>
-
-      <div class="form-group">
-        <label for="nome">Nome Completo</label>
-        <input type="text" id="nome" placeholder="Seu nome completo" autocomplete="name" />
-      </div>
-
-      <div class="form-group">
-        <label for="whatsapp">WhatsApp</label>
-        <input type="tel" id="whatsapp" placeholder="(00) 00000-0000" autocomplete="tel" maxlength="15" />
-      </div>
-
-      <div class="form-group">
-        <label for="email">E-mail</label>
-        <input type="email" id="email" placeholder="seu@email.com" autocomplete="email" />
-      </div>
-
-      <button class="btn-submit" id="btnEnviar" type="button">
-        <span class="btn-text">Quero minha análise gratuita</span>
-        <div class="spinner"></div>
-      </button>
-
-      <p class="form-seguranca">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
-        </svg>
-        Seus dados estão seguros e não serão compartilhados.
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="badge">🔥 Indicação exclusiva</div>
+      <h1 class="hero-titulo">
+        Encontrei carros seminovos
+        <span>com preço abaixo do mercado.</span>
+      </h1>
+      <p class="hero-subtitulo">
+        Estou indicando uma loja de confiança com estoque real, preço justo e financiamento facilitado.
+        Veja os carros disponíveis abaixo e me chama se quiser um.
       </p>
+      <a href="#estoque" class="btn-hero">Ver estoque agora</a>
     </div>
   </section>
 
-</main>
+  <!-- ── ESTOQUE ── -->
+  <section class="estoque-section" id="estoque">
+    <div class="container">
 
-<script src="env.js"></script>
-<script src="script.js"></script>
+      <div class="estoque-header">
+        <h2 class="estoque-titulo">Estoque disponível</h2>
+        <p class="estoque-subtitulo">Filtre pela cidade e veja os carros disponíveis</p>
+      </div>
+
+      <!-- Filtros por cidade -->
+      <div class="filtros" id="filtros">
+        <button class="filtro-btn ativo" data-cidade="todos">Todos</button>
+        <!-- Cidades inseridas dinamicamente pelo script.js -->
+      </div>
+
+      <!-- Loading -->
+      <div class="loading-estado" id="loadingEstado">
+        <div class="spinner-grande"></div>
+        <p>Buscando estoque atualizado…</p>
+      </div>
+
+      <!-- Mensagem erro -->
+      <div class="erro-estado" id="erroEstado" style="display:none;">
+        <p>⚠️ Não foi possível carregar o estoque agora. Tente novamente em instantes.</p>
+        <button class="btn-tentar" onclick="carregarEstoque()">Tentar novamente</button>
+      </div>
+
+      <!-- Grid de cards -->
+      <div class="estoque-grid" id="estoqueContainer"></div>
+
+      <!-- Sem resultados -->
+      <div class="sem-resultados" id="semResultados" style="display:none;">
+        <p>Nenhum carro encontrado nesta cidade no momento.</p>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── FORMULÁRIO DE INTERESSE ── -->
+  <section class="form-section" id="interesse">
+    <div class="container">
+      <div class="form-wrapper">
+        <div class="form-texto">
+          <h2 class="form-titulo">Quer que eu te ajude a escolher?</h2>
+          <p class="form-subtitulo">
+            Me deixa seus dados e eu indico o carro certo pra você — sem enrolação.
+          </p>
+          <ul class="form-beneficios">
+            <li>✅ Análise de crédito em minutos</li>
+            <li>✅ Financiamento nas melhores condições</li>
+            <li>✅ Atendimento pelo WhatsApp</li>
+          </ul>
+        </div>
+
+        <div class="form-card">
+          <div class="msg-erro" id="msgErro"></div>
+          <div class="msg-sucesso" id="msgSucesso" style="display:none;">
+            ✅ Recebemos seu contato! Em breve te chamo no WhatsApp.
+          </div>
+
+          <div class="form-group">
+            <label for="nome">Nome Completo</label>
+            <input type="text" id="nome" placeholder="Seu nome completo" autocomplete="name" />
+          </div>
+
+          <div class="form-group">
+            <label for="whatsapp">WhatsApp</label>
+            <input type="tel" id="whatsapp" placeholder="(00) 00000-0000" autocomplete="tel" maxlength="15" />
+          </div>
+
+          <div class="form-group">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" placeholder="seu@email.com" autocomplete="email" />
+          </div>
+
+          <button class="btn-submit" id="btnEnviar" type="button">
+            <span class="btn-text">Quero indicação gratuita</span>
+            <div class="spinner"></div>
+          </button>
+
+          <p class="form-seguranca">
+            🔒 Seus dados estão seguros e não serão compartilhados.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── RODAPÉ ── -->
+  <footer class="rodape">
+    <p>Indicação pessoal de estoque parceiro. Os preços e disponibilidade podem variar.</p>
+  </footer>
+
+  <script src="env.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

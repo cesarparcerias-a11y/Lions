@@ -1,5 +1,6 @@
-# Arquivo de ambiente — NÃO subir para o GitHub
+# Arquivos de ambiente — NÃO subir para o GitHub
 .env
+env.js
 
 # Sistemas operacionais
 .DS_Store
