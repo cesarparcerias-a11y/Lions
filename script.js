@@ -56,9 +56,9 @@ function construirFiltros(carros) {
   filtros.querySelectorAll('[data-cidade]:not([data-cidade="todos"])').forEach(el => el.remove());
   cidades.forEach(cidade => {
     const btn = document.createElement('button');
-    btn.className    = 'filtro-btn';
+    btn.className      = 'filtro-btn';
     btn.dataset.cidade = cidade;
-    btn.textContent  = cidade;
+    btn.textContent    = cidade;
     btn.addEventListener('click', () => {
       document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('ativo'));
       btn.classList.add('ativo');
@@ -158,12 +158,18 @@ async function enviarLead({ nome, whatsapp, email, loja, carro, btnEl, erroEl })
 
   btnEl.classList.add('loading');
 
+  // Descrição para o Pipefy
+  const descricao = carro
+    ? `Cliente tem interesse em: ${carro.modelo} | ${carro.ano} | ${carro.km} | ${carro.preco} | Loja: ${loja}`
+    : `Cliente indicado pelo parceiro Cesar Bittencourt (Matrícula #40756). Interesse em adquirir um seminovo. Entrar em contato para apresentar opções.`;
+
   // Dados que vão para o Supabase (inclui email do cliente)
   const payloadSupabase = {
     nome_cliente:       nome,
     whatsapp_cliente:   wppLimpo,
     email_cliente:      email,
     loja:               loja,
+    descricao:          descricao,
     matricula_parceiro: MATRICULA_PARCEIRO,
     email_parceiro:     EMAIL_PARCEIRO,
     carro_interesse:    carro ? `${carro.modelo} | ${carro.ano} | ${carro.km} | ${carro.preco}` : '',
@@ -171,14 +177,15 @@ async function enviarLead({ nome, whatsapp, email, loja, carro, btnEl, erroEl })
     criado_em:          new Date().toISOString()
   };
 
-  // Dados que vão para o n8n/Lions (sem email do cliente)
+  // Dados que vão para o n8n → Pipefy da Lions
   const payloadWebhook = {
+    tipo_parceiro:      'PN',
+    matricula_parceiro: MATRICULA_PARCEIRO,
     nome_cliente:       nome,
     whatsapp_cliente:   wppLimpo,
-    loja:               loja,
-    matricula_parceiro: MATRICULA_PARCEIRO,
     email_parceiro:     EMAIL_PARCEIRO,
-    carro_interesse:    carro ? `${carro.modelo} | ${carro.ano} | ${carro.km} | ${carro.preco}` : '',
+    loja:               loja,
+    descricao:          descricao,
     origem:             'indicacao-cesar',
     criado_em:          new Date().toISOString()
   };
