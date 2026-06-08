@@ -7,7 +7,7 @@ const WEBHOOK_URL  = window.__ENV__?.N8N_WEBHOOK_URL || '';
 const MATRICULA_PARCEIRO = '40756';
 const EMAIL_PARCEIRO     = 'cesar.parcerias@gmail.com';
 
-// ── Estoque manual (Fase 1 — substituir pelo n8n futuramente)
+// ── Estoque manual (Fase 1)
 const ESTOQUE_MOCK = [
   { modelo:'HB20 1.0 Sense', preco:'R$ 62.900', ano:'2022', km:'38.000 km', cidade:'Santo Amaro / SP', foto:'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=400&q=80' },
   { modelo:'Onix Plus Premier', preco:'R$ 79.500', ano:'2021', km:'52.000 km', cidade:'Osasco / SP', foto:'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=400&q=80' },
@@ -27,12 +27,14 @@ const ESTOQUE_MOCK = [
   { modelo:'Sandero Intens', preco:'R$ 85.000', ano:'2022', km:'35.000 km', cidade:'Madureira / RJ', foto:'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&q=80' },
 ];
 
-let todosOsCarros = [];
+let todosOsCarros  = [];
+let carroSelecionado = null;
 
+// ── Carregar estoque
 async function carregarEstoque() {
-  const loading   = document.getElementById('loadingEstado');
-  const erroEl    = document.getElementById('erroEstado');
-  const container = document.getElementById('estoqueContainer');
+  const loading    = document.getElementById('loadingEstado');
+  const erroEl     = document.getElementById('erroEstado');
+  const container  = document.getElementById('estoqueContainer');
   loading.style.display = 'flex';
   erroEl.style.display  = 'none';
   container.innerHTML   = '';
@@ -47,6 +49,7 @@ async function carregarEstoque() {
   }
 }
 
+// ── Filtros
 function construirFiltros(carros) {
   const cidades = [...new Set(carros.map(c => c.cidade))].sort();
   const filtros = document.getElementById('filtros');
@@ -73,6 +76,7 @@ document.getElementById('filtros').addEventListener('click', function(e) {
   }
 });
 
+// ── Renderizar cards
 function renderizarCarros(carros) {
   const container     = document.getElementById('estoqueContainer');
   const semResultados = document.getElementById('semResultados');
@@ -92,15 +96,38 @@ function renderizarCarros(carros) {
         <h3 class="carro-modelo">${carro.modelo}</h3>
         <div class="carro-detalhes"><span>📅 ${carro.ano}</span><span>🛣️ ${carro.km}</span></div>
         <div class="carro-preco">${carro.preco}</div>
-        <a href="#interesse" class="btn-carro">Tenho interesse</a>
+        <button class="btn-carro" onclick="abrirPopup(${JSON.stringify(carro).split('"').join("'")})">Tenho interesse</button>
       </div>`;
     container.appendChild(card);
   });
 }
 
-const inputWpp = document.getElementById('whatsapp');
-if (inputWpp) {
-  inputWpp.addEventListener('input', function () {
+// ── Popup
+function abrirPopup(carro) {
+  carroSelecionado = typeof carro === 'string' ? JSON.parse(carro.replace(/'/g, '"')) : carro;
+  document.getElementById('popupCarroInfo').innerHTML = `
+    <strong>${carroSelecionado.modelo}</strong>
+    ${carroSelecionado.ano} • ${carroSelecionado.km} • ${carroSelecionado.preco}
+  `;
+  document.getElementById('popupNome').value  = '';
+  document.getElementById('popupWpp').value   = '';
+  document.getElementById('popupEmail').value = '';
+  document.getElementById('popupErro').style.display = 'none';
+  document.getElementById('popupEnviar').classList.remove('loading');
+  document.getElementById('popupOverlay').classList.add('ativo');
+}
+
+document.getElementById('popupFechar').addEventListener('click', () => {
+  document.getElementById('popupOverlay').classList.remove('ativo');
+});
+
+document.getElementById('popupOverlay').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('ativo');
+});
+
+// ── Máscara WhatsApp (formulário geral e popup)
+function aplicarMascaraWpp(input) {
+  input.addEventListener('input', function () {
     let v = this.value.replace(/\D/g, '').slice(0, 11);
     v = v.length <= 10
       ? v.replace(/^(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3')
@@ -109,34 +136,37 @@ if (inputWpp) {
   });
 }
 
-document.getElementById('btnEnviar').addEventListener('click', async function () {
-  const nome     = document.getElementById('nome').value.trim();
-  const whatsapp = document.getElementById('whatsapp').value.trim();
-  const msgErro  = document.getElementById('msgErro');
-  const btn      = this;
+const inputWpp = document.getElementById('whatsapp');
+const popupWpp = document.getElementById('popupWpp');
+if (inputWpp) aplicarMascaraWpp(inputWpp);
+if (popupWpp) aplicarMascaraWpp(popupWpp);
 
-  msgErro.style.display = 'none';
+// ── Função de envio
+async function enviarLead(nome, whatsapp, email, carro, btnEl, erroEl) {
+  erroEl.style.display = 'none';
 
   if (!nome || !whatsapp) {
-    msgErro.textContent = 'Por favor, preencha seu nome e WhatsApp.';
-    msgErro.style.display = 'block';
-    return;
+    erroEl.textContent = 'Preencha seu nome e WhatsApp.';
+    erroEl.style.display = 'block';
+    return false;
   }
 
   const wppLimpo = whatsapp.replace(/\D/g, '');
   if (wppLimpo.length < 10) {
-    msgErro.textContent = 'Informe um WhatsApp válido com DDD.';
-    msgErro.style.display = 'block';
-    return;
+    erroEl.textContent = 'Informe um WhatsApp válido com DDD.';
+    erroEl.style.display = 'block';
+    return false;
   }
 
-  btn.classList.add('loading');
+  btnEl.classList.add('loading');
 
   const payload = {
     nome_cliente:       nome,
     whatsapp_cliente:   wppLimpo,
+    email_cliente:      email || '',
     email_parceiro:     EMAIL_PARCEIRO,
     matricula_parceiro: MATRICULA_PARCEIRO,
+    carro_interesse:    carro ? `${carro.modelo} ${carro.ano} ${carro.preco}` : '',
     origem:             'indicacao-cesar',
     criado_em:          new Date().toISOString()
   };
@@ -162,11 +192,31 @@ document.getElementById('btnEnviar').addEventListener('click', async function ()
       });
     }
     window.location.href = 'obrigado.html';
+    return true;
   } catch (error) {
-    btn.classList.remove('loading');
-    msgErro.textContent = 'Erro ao enviar. Tente novamente.';
-    msgErro.style.display = 'block';
+    btnEl.classList.remove('loading');
+    erroEl.textContent = 'Erro ao enviar. Tente novamente.';
+    erroEl.style.display = 'block';
+    return false;
   }
+}
+
+// ── Envio pelo popup
+document.getElementById('popupEnviar').addEventListener('click', function () {
+  const nome  = document.getElementById('popupNome').value.trim();
+  const wpp   = document.getElementById('popupWpp').value.trim();
+  const email = document.getElementById('popupEmail').value.trim();
+  const erro  = document.getElementById('popupErro');
+  enviarLead(nome, wpp, email, carroSelecionado, this, erro);
 });
 
+// ── Envio pelo formulário geral
+document.getElementById('btnEnviar').addEventListener('click', function () {
+  const nome  = document.getElementById('nome').value.trim();
+  const wpp   = document.getElementById('whatsapp').value.trim();
+  const erro  = document.getElementById('msgErro');
+  enviarLead(nome, wpp, '', null, this, erro);
+});
+
+// ── Iniciar
 carregarEstoque();
