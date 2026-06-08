@@ -56,6 +56,7 @@ a{text-decoration:none;color:inherit}
 .c-bg-laranja .cri-headline em{color:#FFB347}
 .cri-center{text-align:center}
 .cri-sub{font-size:16px;line-height:1.65;opacity:.82;margin-bottom:24px;max-width:420px}
+.cri-sub-destaque{font-size:clamp(18px,2.2vw,24px);font-weight:700;line-height:1.5;color:var(--branco);opacity:1;margin-bottom:28px;max-width:600px}
 .cri-btn{display:inline-block;background:var(--branco);color:var(--preto);padding:13px 28px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;transition:opacity .2s,transform .15s;align-self:flex-start}
 .cri-btn:hover{opacity:.9;transform:translateY(-1px)}
 .cri-btn-outline{background:transparent;color:var(--branco);border:2px solid var(--branco)}
@@ -63,13 +64,16 @@ a{text-decoration:none;color:inherit}
 .cri-legal{font-size:11px;opacity:.5;margin-top:4px}
 .cri-checks{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;font-size:14px;font-weight:500}
 
+/* LOGOS APPS */
+.c3-apps{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-bottom:32px}
+.app-logo-item{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:12px;padding:10px 18px;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.app-logo-item img{height:38px;width:auto;object-fit:contain;display:block}
+
 /* C3 full */
 .c3-full{display:flex;min-height:560px;position:relative;align-items:center;justify-content:center;overflow:hidden}
 .c3-bg{position:absolute;inset:0}
 .c3-bg img{width:100%;height:100%;object-fit:cover}
 .c3-conteudo{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;padding:64px 40px;text-align:center;max-width:900px;margin:0 auto}
-.c3-apps{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:32px}
-.app-badge{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:100px;padding:7px 18px;font-size:13px;font-weight:700;backdrop-filter:blur(4px)}
 .c3-conteudo .cri-btn{align-self:center;margin-top:8px}
 
 /* C7 */
