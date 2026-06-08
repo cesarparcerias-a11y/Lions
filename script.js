@@ -27,7 +27,7 @@ const ESTOQUE_MOCK = [
   { modelo:'Sandero Intens', preco:'R$ 85.000', ano:'2022', km:'35.000 km', cidade:'Madureira / RJ', foto:'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&q=80' },
 ];
 
-let todosOsCarros  = [];
+let todosOsCarros    = [];
 let carroSelecionado = null;
 
 // ── Carregar estoque
@@ -56,9 +56,9 @@ function construirFiltros(carros) {
   filtros.querySelectorAll('[data-cidade]:not([data-cidade="todos"])').forEach(el => el.remove());
   cidades.forEach(cidade => {
     const btn = document.createElement('button');
-    btn.className = 'filtro-btn';
+    btn.className    = 'filtro-btn';
     btn.dataset.cidade = cidade;
-    btn.textContent = cidade;
+    btn.textContent  = cidade;
     btn.addEventListener('click', () => {
       document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('ativo'));
       btn.classList.add('ativo');
@@ -96,22 +96,23 @@ function renderizarCarros(carros) {
         <h3 class="carro-modelo">${carro.modelo}</h3>
         <div class="carro-detalhes"><span>📅 ${carro.ano}</span><span>🛣️ ${carro.km}</span></div>
         <div class="carro-preco">${carro.preco}</div>
-        <button class="btn-carro" onclick="abrirPopup(${JSON.stringify(carro).split('"').join("'")})">Tenho interesse</button>
+        <button class="btn-carro" onclick='abrirPopup(${JSON.stringify(carro)})'>Tenho interesse</button>
       </div>`;
     container.appendChild(card);
   });
 }
 
-// ── Popup
+// ── Popup do carro
 function abrirPopup(carro) {
-  carroSelecionado = typeof carro === 'string' ? JSON.parse(carro.replace(/'/g, '"')) : carro;
+  carroSelecionado = carro;
   document.getElementById('popupCarroInfo').innerHTML = `
-    <strong>${carroSelecionado.modelo}</strong>
-    ${carroSelecionado.ano} • ${carroSelecionado.km} • ${carroSelecionado.preco}
+    <strong>${carro.modelo}</strong>
+    ${carro.ano} • ${carro.km} • ${carro.preco}
   `;
   document.getElementById('popupNome').value  = '';
   document.getElementById('popupWpp').value   = '';
   document.getElementById('popupEmail').value = '';
+  document.getElementById('popupLoja').value  = '';
   document.getElementById('popupErro').style.display = 'none';
   document.getElementById('popupEnviar').classList.remove('loading');
   document.getElementById('popupOverlay').classList.add('ativo');
@@ -125,7 +126,7 @@ document.getElementById('popupOverlay').addEventListener('click', function(e) {
   if (e.target === this) this.classList.remove('ativo');
 });
 
-// ── Máscara WhatsApp (formulário geral e popup)
+// ── Máscara WhatsApp
 function aplicarMascaraWpp(input) {
   input.addEventListener('input', function () {
     let v = this.value.replace(/\D/g, '').slice(0, 11);
@@ -135,38 +136,49 @@ function aplicarMascaraWpp(input) {
     this.value = v.trim().replace(/-$/, '');
   });
 }
+aplicarMascaraWpp(document.getElementById('whatsapp'));
+aplicarMascaraWpp(document.getElementById('popupWpp'));
 
-const inputWpp = document.getElementById('whatsapp');
-const popupWpp = document.getElementById('popupWpp');
-if (inputWpp) aplicarMascaraWpp(inputWpp);
-if (popupWpp) aplicarMascaraWpp(popupWpp);
-
-// ── Função de envio
-async function enviarLead(nome, whatsapp, email, carro, btnEl, erroEl) {
+// ── Função central de envio
+async function enviarLead({ nome, whatsapp, email, loja, carro, btnEl, erroEl }) {
   erroEl.style.display = 'none';
 
-  if (!nome || !whatsapp) {
-    erroEl.textContent = 'Preencha seu nome e WhatsApp.';
+  if (!nome || !whatsapp || !email || !loja) {
+    erroEl.textContent = 'Preencha todos os campos, incluindo a loja.';
     erroEl.style.display = 'block';
-    return false;
+    return;
   }
 
   const wppLimpo = whatsapp.replace(/\D/g, '');
   if (wppLimpo.length < 10) {
     erroEl.textContent = 'Informe um WhatsApp válido com DDD.';
     erroEl.style.display = 'block';
-    return false;
+    return;
   }
 
   btnEl.classList.add('loading');
 
-  const payload = {
+  // Dados que vão para o Supabase (inclui email do cliente)
+  const payloadSupabase = {
     nome_cliente:       nome,
     whatsapp_cliente:   wppLimpo,
-    email_cliente:      email || '',
-    email_parceiro:     EMAIL_PARCEIRO,
+    email_cliente:      email,
+    loja:               loja,
     matricula_parceiro: MATRICULA_PARCEIRO,
-    carro_interesse:    carro ? `${carro.modelo} ${carro.ano} ${carro.preco}` : '',
+    email_parceiro:     EMAIL_PARCEIRO,
+    carro_interesse:    carro ? `${carro.modelo} | ${carro.ano} | ${carro.km} | ${carro.preco}` : '',
+    origem:             'indicacao-cesar',
+    criado_em:          new Date().toISOString()
+  };
+
+  // Dados que vão para o n8n/Lions (sem email do cliente)
+  const payloadWebhook = {
+    nome_cliente:       nome,
+    whatsapp_cliente:   wppLimpo,
+    loja:               loja,
+    matricula_parceiro: MATRICULA_PARCEIRO,
+    email_parceiro:     EMAIL_PARCEIRO,
+    carro_interesse:    carro ? `${carro.modelo} | ${carro.ano} | ${carro.km} | ${carro.preco}` : '',
     origem:             'indicacao-cesar',
     criado_em:          new Date().toISOString()
   };
@@ -181,41 +193,51 @@ async function enviarLead(nome, whatsapp, email, carro, btnEl, erroEl) {
           'Authorization': `Bearer ${SUPABASE_KEY}`,
           'Prefer': 'return=minimal'
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payloadSupabase)
       });
     }
+
     if (WEBHOOK_URL) {
       await fetch(WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payloadWebhook)
       });
     }
+
     window.location.href = 'obrigado.html';
-    return true;
+
   } catch (error) {
     btnEl.classList.remove('loading');
     erroEl.textContent = 'Erro ao enviar. Tente novamente.';
     erroEl.style.display = 'block';
-    return false;
   }
 }
 
-// ── Envio pelo popup
+// ── Envio popup do carro
 document.getElementById('popupEnviar').addEventListener('click', function () {
-  const nome  = document.getElementById('popupNome').value.trim();
-  const wpp   = document.getElementById('popupWpp').value.trim();
-  const email = document.getElementById('popupEmail').value.trim();
-  const erro  = document.getElementById('popupErro');
-  enviarLead(nome, wpp, email, carroSelecionado, this, erro);
+  enviarLead({
+    nome:     document.getElementById('popupNome').value.trim(),
+    whatsapp: document.getElementById('popupWpp').value.trim(),
+    email:    document.getElementById('popupEmail').value.trim(),
+    loja:     document.getElementById('popupLoja').value,
+    carro:    carroSelecionado,
+    btnEl:    this,
+    erroEl:   document.getElementById('popupErro')
+  });
 });
 
-// ── Envio pelo formulário geral
+// ── Envio formulário geral
 document.getElementById('btnEnviar').addEventListener('click', function () {
-  const nome  = document.getElementById('nome').value.trim();
-  const wpp   = document.getElementById('whatsapp').value.trim();
-  const erro  = document.getElementById('msgErro');
-  enviarLead(nome, wpp, '', null, this, erro);
+  enviarLead({
+    nome:     document.getElementById('nome').value.trim(),
+    whatsapp: document.getElementById('whatsapp').value.trim(),
+    email:    document.getElementById('email').value.trim(),
+    loja:     document.getElementById('loja').value,
+    carro:    null,
+    btnEl:    this,
+    erroEl:   document.getElementById('msgErro')
+  });
 });
 
 // ── Iniciar
