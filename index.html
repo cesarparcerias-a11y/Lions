@@ -13,7 +13,7 @@
     <div class="hero-inner">
       <h1 class="hero-titulo">Comprei meu carro na Lions<span>e indico pra você.</span></h1>
       <p class="hero-subtitulo">Fui lá, fui bem atendido, consegui financiamento fácil — e agora estou indicando pra quem também quer comprar um seminovo com preço justo e sem burocracia.</p>
-      <a href="#estoque" class="btn-hero">Ver estoque agora</a>
+      <a href="#estoque-preview" class="btn-hero">Ver estoque agora</a>
     </div>
   </section>
 
@@ -151,28 +151,22 @@
     </div>
   </div>
 
-  <!-- ESTOQUE -->
-  <section class="estoque-section" id="estoque">
-    <div class="container">
-      <div class="estoque-header">
-        <h2 class="secao-titulo">Estoque disponível</h2>
-        <p class="estoque-subtitulo">Escolha a cidade mais próxima de você</p>
+  <!-- ── CARROSSEL DE DESTAQUE ── -->
+  <section class="preview-section" id="estoque-preview">
+    <div class="preview-header">
+      <div class="preview-header-texto">
+        <p class="preview-label">🚗 Estoque real · Atualizado diariamente</p>
+        <h2 class="preview-titulo">+469 carros disponíveis.<br/><em>Qual é o seu?</em></h2>
       </div>
-      <div class="filtros" id="filtros">
-        <button class="filtro-btn ativo" data-cidade="todos">Todas as cidades</button>
-      </div>
-      <div class="loading-estado" id="loadingEstado">
-        <div class="spinner-grande"></div>
-        <p>Carregando estoque…</p>
-      </div>
-      <div class="erro-estado" id="erroEstado" style="display:none;">
-        <p>⚠️ Não foi possível carregar o estoque agora.</p>
-        <button class="btn-tentar" onclick="carregarEstoque()">Tentar novamente</button>
-      </div>
-      <div class="estoque-grid" id="estoqueContainer"></div>
-      <div class="sem-resultados" id="semResultados" style="display:none;">
-        <p>Nenhum carro encontrado nesta cidade no momento.</p>
-      </div>
+      <a href="estoque.html" class="btn-estoque-completo">Ver estoque completo →</a>
+    </div>
+    <div class="carrossel-wrapper">
+      <button class="carrossel-prev" id="carrosselPrev">&#8249;</button>
+      <div class="carrossel-track" id="carrosselTrack"></div>
+      <button class="carrossel-next" id="carrosselNext">&#8250;</button>
+    </div>
+    <div class="preview-cta-mobile">
+      <a href="estoque.html" class="btn-estoque-completo btn-estoque-full">Ver estoque completo →</a>
     </div>
   </section>
 

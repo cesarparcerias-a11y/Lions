@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Estoque Completo — Indicação do Cesar Bittencourt</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- HEADER DA PÁGINA DE ESTOQUE -->
+  <section class="estoque-page-hero">
+    <div class="container">
+      <a href="index.html" class="btn-voltar-home">← Voltar</a>
+      <h1 class="estoque-page-titulo">Estoque completo<br/><em>+469 carros disponíveis</em></h1>
+      <p class="estoque-page-sub">Todos os seminovos da Lions Seminovos. Encontre o seu.</p>
+    </div>
+  </section>
+
+  <!-- FILTROS + GRID -->
+  <section class="estoque-page-section">
+    <div class="container">
+
+      <!-- Busca e filtros -->
+      <div class="estoque-filtros-bar">
+        <input type="text" id="buscaInput" class="busca-input" placeholder="🔍  Buscar por modelo, marca ou cor…" />
+        <div class="filtros-chips" id="filtrosChips">
+          <button class="chip ativo" data-filtro="todos">Todos</button>
+          <button class="chip" data-filtro="Hatch">Hatch</button>
+          <button class="chip" data-filtro="Sedan">Sedan</button>
+          <button class="chip" data-filtro="SUV">SUV</button>
+          <button class="chip" data-filtro="Picape">Picape</button>
+          <button class="chip" data-filtro="Utilitario">Utilitário</button>
+          <button class="chip" data-filtro="Moto">Moto</button>
+        </div>
+      </div>
+
+      <!-- Contador -->
+      <p class="estoque-contador" id="estoqueContador"></p>
+
+      <!-- Loading -->
+      <div class="loading-estado" id="loadingEstado">
+        <div class="spinner-grande"></div>
+        <p>Carregando estoque…</p>
+      </div>
+
+      <!-- Erro -->
+      <div class="erro-estado" id="erroEstado" style="display:none;">
+        <p>⚠️ Não foi possível carregar o estoque agora.</p>
+        <button class="btn-tentar" onclick="carregarPagina(1)">Tentar novamente</button>
+      </div>
+
+      <!-- Grid -->
+      <div class="estoque-page-grid" id="estoqueGrid"></div>
+
+      <!-- Paginação -->
+      <div class="paginacao" id="paginacao"></div>
+
+    </div>
+  </section>
+
+  <!-- POPUP DO CARRO -->
+  <div class="popup-overlay" id="popupOverlay">
+    <div class="popup-box">
+      <button class="popup-fechar" id="popupFechar">✕</button>
+      <div class="popup-carro-info" id="popupCarroInfo"></div>
+      <h3 class="popup-titulo">Me passa seus dados</h3>
+      <p class="popup-subtitulo">O time da Lions entra em contato pelo WhatsApp.</p>
+      <div class="msg-erro" id="popupErro" style="display:none;"></div>
+      <div class="form-group">
+        <label for="popupNome">Seu nome</label>
+        <input type="text" id="popupNome" placeholder="Nome completo" />
+      </div>
+      <div class="form-group">
+        <label for="popupWpp">Seu WhatsApp</label>
+        <input type="tel" id="popupWpp" placeholder="(00) 00000-0000" maxlength="15" />
+      </div>
+      <div class="form-group">
+        <label for="popupEmail">Seu e-mail</label>
+        <input type="email" id="popupEmail" placeholder="seu@email.com" />
+      </div>
+      <div class="form-group">
+        <label for="popupLoja">Loja mais próxima</label>
+        <select id="popupLoja" class="form-select">
+          <option value="">Selecione a loja…</option>
+          <option>Lions Seminovos Nova Iguaçu</option>
+          <option>Lions Seminovos Duque de Caxias</option>
+          <option>Lions Seminovos Intendente Magalhães</option>
+          <option>Lions Seminovos Niterói</option>
+          <option>Lions Seminovos Barra Mansa</option>
+          <option>Lions Seminovos Campo Grande</option>
+          <option>Lions Seminovos Nova Iguaçu - Dutra</option>
+          <option>Lions Seminovos Vila Prudente</option>
+          <option>Lions Seminovos Osasco</option>
+          <option>Lions Seminovos Santo Amaro</option>
+          <option>Lions Seminovos São Bernardo do Campo</option>
+          <option>Lions Seminovos São Miguel</option>
+          <option>Lions Seminovos Mogi das Cruzes</option>
+          <option>Lions Seminovos Limeira</option>
+          <option>Lions Seminovos Piracicaba</option>
+          <option>Lions Seminovos Campinas</option>
+          <option>Lions Seminovos Indaiatuba</option>
+          <option>Lions Seminovos Madureira</option>
+        </select>
+      </div>
+      <button class="btn-submit" id="popupEnviar" type="button">
+        <span class="btn-text">Quero este carro</span>
+        <div class="spinner"></div>
+      </button>
+    </div>
+  </div>
+
+  <footer class="rodape">
+    <p>Indicação pessoal de Cesar Bittencourt • Parceiro Lions Seminovos</p>
+  </footer>
+
+  <script src="env.js"></script>
+  <script src="estoque.js"></script>
+</body>
+</html>
