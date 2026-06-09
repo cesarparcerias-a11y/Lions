@@ -1,0 +1,112 @@
+{
+  "name": "Pipefy",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ee328497-8b2d-48d4-8046-a7602d70559e",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [0, 0],
+      "id": "webhook-leads",
+      "name": "Webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://2captcha.com/in.php",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            { "name": "key", "value": "f8d39bc152ab55eddd1e45c298e3f71c" },
+            { "name": "method", "value": "hcaptcha" },
+            { "name": "sitekey", "value": "13257c82-e129-4f09-a733-2a7cb3102f38" },
+            { "name": "pageurl", "value": "https://app.pipefy.com/public/form/R7NQ_Pct" },
+            { "name": "json", "value": "1" }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [220, 0],
+      "id": "solicitar-captcha",
+      "name": "Solicitar Captcha"
+    },
+    {
+      "parameters": {
+        "amount": 40,
+        "unit": "seconds"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [440, 0],
+      "id": "aguardar-captcha",
+      "name": "Aguardar 40s"
+    },
+    {
+      "parameters": {
+        "url": "=https://2captcha.com/res.php?key=f8d39bc152ab55eddd1e45c298e3f71c&action=get&id={{ $('Solicitar Captcha').item.json.request }}&json=1",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [660, 0],
+      "id": "obter-captcha",
+      "name": "Obter Token Captcha"
+    },
+    {
+      "parameters": {
+        "jsCode": "const lojaMap = {\n  'Lions Seminovos Nova Iguaçu': 'NI',\n  'Lions Seminovos Duque de Caxias': 'DC',\n  'Lions Seminovos Intendente Magalhães': 'IT',\n  'Lions Seminovos Niterói': 'NT',\n  'Lions Seminovos Barra Mansa': 'BM',\n  'Lions Seminovos Campo Grande': 'CG',\n  'Lions Seminovos Nova Iguaçu - Dutra': 'NI',\n  'Lions Seminovos Vila Prudente': 'VP',\n  'Lions Seminovos Osasco': 'OS',\n  'Lions Seminovos Santo Amaro': 'SA',\n  'Lions Seminovos São Bernardo do Campo': 'SB',\n  'Lions Seminovos São Miguel': 'SM',\n  'Lions Seminovos Mogi das Cruzes': 'MC',\n  'Lions Seminovos Limeira': 'LM',\n  'Lions Seminovos Piracicaba': 'PR',\n  'Lions Seminovos Campinas': 'CP',\n  'Lions Seminovos Indaiatuba': 'CP',\n  'Lions Seminovos Madureira': 'IT'\n};\n\nconst lojaNome = $('Webhook').item.json.body.loja || '';\nconst lojaSigla = lojaMap[lojaNome] || 'NI';\n\nreturn [{ json: { loja_sigla: lojaSigla } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [880, 0],
+      "id": "converter-loja",
+      "name": "Converter Loja"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://app.pipefy.com/public_api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={\n  \"operationName\": \"submitPublicForm\",\n  \"variables\": {\n    \"formId\": \"R7NQ_Pct\",\n    \"filledFields\": [\n      { \"fieldId\": \"voc_pn_ou_fn\", \"fieldValue\": \"PN = Parceiro de negócios\" },\n      { \"fieldId\": \"busque_a_sua_matr_cula\", \"fieldValue\": [\"40756\"] },\n      { \"fieldId\": \"nome_do_cliente\", \"fieldValue\": \"{{ $('Webhook').item.json.body.nome_cliente }}\" },\n      { \"fieldId\": \"telefone_do_cliente\", \"fieldValue\": \"{{ $('Webhook').item.json.body.whatsapp_cliente }}\" },\n      { \"fieldId\": \"e_mail_do_cliente\", \"fieldValue\": \"cesar.parcerias@gmail.com\" },\n      { \"fieldId\": \"breve_descri_o\", \"fieldValue\": \"{{ $('Webhook').item.json.body.descricao }}\" },\n      { \"fieldId\": \"qual_a_melhor_loja_para_o_cliente\", \"fieldValue\": \"{{ $('Converter Loja').item.json.loja_sigla }}\" }\n    ],\n    \"captchaToken\": \"{{ $('Obter Token Captcha').item.json.request }}\"\n  },\n  \"query\": \"mutation submitPublicForm($formId: ID!, $filledFields: [FilledField]!, $captchaToken: String) { submitPublicForm(input: {formId: $formId, filledFields: $filledFields, captchaToken: $captchaToken}) { repoItem { id title } } }\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [1100, 0],
+      "id": "enviar-pipefy",
+      "name": "Enviar Pipefy"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Solicitar Captcha", "type": "main", "index": 0 }]]
+    },
+    "Solicitar Captcha": {
+      "main": [[{ "node": "Aguardar 40s", "type": "main", "index": 0 }]]
+    },
+    "Aguardar 40s": {
+      "main": [[{ "node": "Obter Token Captcha", "type": "main", "index": 0 }]]
+    },
+    "Obter Token Captcha": {
+      "main": [[{ "node": "Converter Loja", "type": "main", "index": 0 }]]
+    },
+    "Converter Loja": {
+      "main": [[{ "node": "Enviar Pipefy", "type": "main", "index": 0 }]]
+    }
+  },
+  "pinData": {}
+}

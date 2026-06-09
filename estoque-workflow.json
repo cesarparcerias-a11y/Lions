@@ -1,0 +1,60 @@
+{
+  "name": "Estoque",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "estoque-lions",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [0, 0],
+      "id": "webhook-estoque",
+      "name": "Webhook Estoque",
+      "webhookId": "estoque-lions"
+    },
+    {
+      "parameters": {
+        "url": "=https://www.lionsoficial.com.br/api/estoque/search?pagina={{ $json.query.pagina || 1 }}&quantidade={{ $json.query.quantidade || 12 }}{{ $json.query.carroceria ? '&carroceria=' + $json.query.carroceria : '' }}{{ $json.query.busca ? '&busca=' + $json.query.busca : '' }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [220, 0],
+      "id": "busca-lions",
+      "name": "Busca Lions API"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [440, 0],
+      "id": "resposta",
+      "name": "Resposta"
+    }
+  ],
+  "connections": {
+    "Webhook Estoque": {
+      "main": [[{ "node": "Busca Lions API", "type": "main", "index": 0 }]]
+    },
+    "Busca Lions API": {
+      "main": [[{ "node": "Resposta", "type": "main", "index": 0 }]]
+    }
+  },
+  "pinData": {}
+}
