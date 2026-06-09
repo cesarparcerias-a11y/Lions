@@ -4,8 +4,7 @@ const SUPABASE_KEY = window.__ENV__?.SUPABASE_ANON_KEY || '';
 const WEBHOOK_URL  = window.__ENV__?.N8N_WEBHOOK_URL || '';
 const MATRICULA_PARCEIRO = '40756';
 const EMAIL_PARCEIRO     = 'cesar.parcerias@gmail.com';
-const API_LIONS = 'https://www.lionsoficial.com.br/api/estoque/search';
-
+const API_LIONS = 'https://n8n-production-1b10.up.railway.app/webhook/estoque-lions';
 let carroSelecionado = null;
 
 function formatKm(km) {
