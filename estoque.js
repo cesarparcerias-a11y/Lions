@@ -31,7 +31,7 @@ async function carregarPagina(pagina) {
   paginacao.innerHTML    = '';
 
   try {
-    let url = `${API_LIONS}?pagina=${pagina}&quantidade=12`;
+    let url = `${API_LIONS}?pagina=${pagina}&quantidade=16`;
     if (filtroCarroceria !== 'todos') url += `&carroceria=${filtroCarroceria}`;
     if (filtroBusca) url += `&busca=${encodeURIComponent(filtroBusca)}`;
 

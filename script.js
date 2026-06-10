@@ -20,7 +20,7 @@ async function carregarCarrossel() {
   const track = document.getElementById('carrosselTrack');
   if (!track) return;
   try {
-    const res  = await fetch(`${API_LIONS}?pagina=1&quantidade=8`);
+    const res  = await fetch(`${API_LIONS}?pagina=1&quantidade=14`);
     const data = await res.json();
     carrosselCarros = data.veiculos;
     renderizarCarrossel();
