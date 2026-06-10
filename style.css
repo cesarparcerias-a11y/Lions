@@ -51,6 +51,7 @@ a{text-decoration:none;color:inherit}
 .cri-headline em{font-style:normal;color:rgba(255,255,255,.85);text-shadow:0 0 30px rgba(255,255,255,.3)}
 .c-bg-vermelho .cri-headline em{color:#FFD700}
 .c-bg-azul .cri-headline em{color:#64DFDF}
+.em-vermelho{color:var(--vermelho)!important;text-shadow:none!important}
 .c-bg-laranja .cri-headline em{color:#FFB347}
 .cri-center{text-align:center}
 .cri-sub{font-size:16px;line-height:1.65;opacity:.82;margin-bottom:24px;max-width:100%}
@@ -163,6 +164,7 @@ a{text-decoration:none;color:inherit}
 .form-section{padding:80px 0;background:var(--preto-medio);border-top:1px solid var(--borda)}
 .form-wrapper{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
 .form-titulo{font-family:'Barlow Condensed',sans-serif;font-size:clamp(26px,3.5vw,42px);font-weight:900;text-transform:uppercase;line-height:1.1;margin-bottom:16px}
+.form-titulo em{font-style:normal;color:var(--vermelho)}
 .form-subtitulo{font-size:16px;color:var(--cinza);line-height:1.6;margin-bottom:24px}
 .form-transparencia{font-size:14px;color:var(--cinza);line-height:1.6;margin-bottom:24px;padding:12px 16px;border:1px solid var(--borda);border-radius:8px;opacity:.8}
 .form-beneficios{list-style:none;display:flex;flex-direction:column;gap:10px;font-size:15px;color:#CCC}
