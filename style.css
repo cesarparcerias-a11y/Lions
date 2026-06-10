@@ -19,7 +19,8 @@ a{text-decoration:none;color:inherit}
 .secao-titulo{font-family:'Barlow Condensed',sans-serif;font-size:clamp(28px,4vw,42px);font-weight:900;text-transform:uppercase;margin-bottom:12px}
 
 /* HERO */
-.hero{min-height:70vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:80px 24px;background:radial-gradient(ellipse at 50% 0%,rgba(200,16,46,0.2) 0%,transparent 60%),var(--preto);border-bottom:1px solid var(--borda)}
+.hero{min-height:70vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:80px 24px;background:radial-gradient(ellipse at 50% 0%,rgba(200,16,46,0.2) 0%,transparent 60%),var(--preto);border-bottom:1px solid var(--borda);position:relative}
+.hero-logo{position:absolute;top:28px;left:32px;height:52px;width:auto;opacity:.95}
 .hero-inner{max-width:760px}
 .hero-titulo{font-family:'Barlow Condensed',sans-serif;font-size:clamp(36px,6vw,68px);font-weight:900;text-transform:uppercase;line-height:1.05;margin-bottom:20px}
 .hero-titulo span{color:var(--vermelho);display:block}
@@ -237,6 +238,7 @@ a{text-decoration:none;color:inherit}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 @media(max-width:768px){
+  .hero-logo{height:36px;top:16px;left:16px}
   .criativo{flex-direction:column!important;min-height:auto}
   .c-foto{min-height:260px;order:1!important}
   .c-texto{order:2!important;padding:40px 28px}
