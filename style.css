@@ -164,6 +164,7 @@ a{text-decoration:none;color:inherit}
 .form-wrapper{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
 .form-titulo{font-family:'Barlow Condensed',sans-serif;font-size:clamp(26px,3.5vw,42px);font-weight:900;text-transform:uppercase;line-height:1.1;margin-bottom:16px}
 .form-subtitulo{font-size:16px;color:var(--cinza);line-height:1.6;margin-bottom:24px}
+.form-transparencia{font-size:14px;color:var(--cinza);line-height:1.6;margin-bottom:24px;padding:12px 16px;border:1px solid var(--borda);border-radius:8px;opacity:.8}
 .form-beneficios{list-style:none;display:flex;flex-direction:column;gap:10px;font-size:15px;color:#CCC}
 .form-beneficios-grande{font-size:20px;font-weight:700;color:var(--branco)}
 .form-card{background:var(--preto-card);border:1px solid var(--borda);border-radius:20px;padding:36px 32px;position:relative;overflow:hidden}
