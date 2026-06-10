@@ -202,6 +202,7 @@ a{text-decoration:none;color:inherit}
 
 /* RODAPÉ */
 .rodape{text-align:center;padding:28px 24px;font-size:13px;color:#555;border-top:1px solid var(--borda)}
+.seo-texto{font-size:11px;color:#333;line-height:1.6;margin-top:20px;padding:0 24px;max-width:1200px;margin-left:auto;margin-right:auto;text-align:justify;opacity:.5}
 
 /* OBRIGADO */
 .obrigado-page{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center;background:radial-gradient(ellipse at 50% 30%,rgba(200,16,46,.12) 0%,transparent 60%),var(--preto)}
