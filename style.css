@@ -262,6 +262,7 @@ a{text-decoration:none;color:inherit}
   .preview-header{flex-direction:column;gap:20px;align-items:flex-start;padding:0 24px}
   .btn-estoque-completo{display:none}
   .preview-cta-mobile{display:block!important}
+  .preview-cta-mobile .btn-estoque-completo{display:block!important;width:100%;text-align:center}
   .btn-estoque-full{width:calc(100% - 48px);margin:0 24px}
   .carrossel-wrapper{padding:0 48px}
   .mini-card{min-width:180px;max-width:180px}
