@@ -58,6 +58,7 @@ a{text-decoration:none;color:inherit}
 .cri-sub{font-size:16px;line-height:1.65;opacity:.82;margin-bottom:24px;max-width:100%}
 .cri-selo{font-size:15px;line-height:1.5;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);border-radius:10px;padding:12px 16px;margin-bottom:20px;display:inline-block}
 .cri-selo strong{color:#FFD166}
+.move-brasil-destaque{font-size:1.3em;color:#FFD166;text-transform:uppercase}
 .cri-sub-destaque{font-size:clamp(18px,2.2vw,24px);font-weight:700;line-height:1.5;color:var(--branco);opacity:1;margin-bottom:28px;max-width:600px}
 .cri-btn{display:inline-block;background:var(--branco);color:var(--preto);padding:13px 28px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:12px;transition:opacity .2s,transform .15s;align-self:stretch;text-align:center}
 .cri-btn:hover{opacity:.9;transform:translateY(-1px)}
