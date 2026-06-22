@@ -8,8 +8,9 @@ const API_LIONS = 'https://n8n-production-1b10.up.railway.app/webhook/estoque-li
 
 let paginaAtual      = 1;
 let carroSelecionado = null;
-let todosOsCarros    = []; // cache de todos os carros
-let carrosFiltrados  = []; // resultado após filtros
+let todosOsCarros    = [];
+let carrosFiltrados  = [];
+let carregamentoCompleto = false;
 
 // Estado dos filtros
 let filtros = {
@@ -23,13 +24,19 @@ let filtros = {
   carrocerias: []
 };
 
+// ── Normalizar texto (remove duplicatas como BRANCA / Branca / branca)
+function normalizar(str) {
+  if (!str) return '';
+  return str.trim().charAt(0).toUpperCase() + str.trim().slice(1).toLowerCase();
+}
+
 // ── Formatar km
 function formatKm(km) {
   return parseInt(km).toLocaleString('pt-BR') + ' km';
 }
 
-// ── Carregar TODOS os carros da API uma vez só
-async function carregarTodosOsCarros() {
+// ── PASSO 1: Carregar primeira página imediatamente e mostrar os carros
+async function iniciar() {
   const loading = document.getElementById('loadingEstado');
   const erroEl  = document.getElementById('erroEstado');
 
@@ -37,46 +44,105 @@ async function carregarTodosOsCarros() {
   erroEl.style.display  = 'none';
 
   try {
-    let todos = [];
-    let p = 1;
-    while (true) {
-      const res  = await fetch(`${API_LIONS}?pagina=${p}&quantidade=100`);
-      const data = await res.json();
-      todos = todos.concat(data.veiculos || []);
-      if (p >= data.totalPaginas) break;
-      p++;
-    }
-    todosOsCarros = todos;
-    popularFiltros(todos);
-    aplicarFiltros();
+    // Busca só a primeira página (rápido)
+    const res  = await fetch(`${API_LIONS}?pagina=1&quantidade=16`);
+    const data = await res.json();
+
+    // Normaliza e salva no cache
+    const primeiros = (data.veiculos || []).map(normalizarVeiculo);
+    todosOsCarros   = primeiros;
+    carrosFiltrados = primeiros;
+
+    // Mostra os carros imediatamente
+    loading.style.display = 'none';
+    carregarPagina(1);
+
+    // PASSO 2: Carrega o resto em segundo plano, sem travar a tela
+    carregarRestoEmSegundoPlano(data.totalPaginas || 1);
+
   } catch (err) {
     erroEl.style.display  = 'block';
     loading.style.display = 'none';
   }
 }
 
-// ── Popular dropdowns com os dados reais do estoque
+// ── Normalizar campos de um veículo
+function normalizarVeiculo(v) {
+  return {
+    ...v,
+    marca:       normalizar(v.marca),
+    modelo:      v.modelo ? v.modelo.trim() : '',
+    cor:         normalizar(v.cor),
+    combustivel: normalizar(v.combustivel),
+    carroceria:  v.carroceria ? v.carroceria.trim() : ''
+  };
+}
+
+// ── PASSO 2: Carrega páginas restantes silenciosamente
+async function carregarRestoEmSegundoPlano(totalPaginas) {
+  try {
+    for (let p = 2; p <= totalPaginas; p++) {
+      const res  = await fetch(`${API_LIONS}?pagina=${p}&quantidade=100`);
+      const data = await res.json();
+      const novos = (data.veiculos || []).map(normalizarVeiculo);
+      todosOsCarros = todosOsCarros.concat(novos);
+    }
+  } catch (err) {
+    // Se falhar no meio, usa o que já tem
+  }
+
+  carregamentoCompleto = true;
+  popularFiltros(todosOsCarros);
+
+  // Atualiza contador se não houver filtro ativo
+  const temFiltroAtivo = filtros.busca || filtros.marca || filtros.modelo ||
+    filtros.cor || filtros.combustivel || filtros.carrocerias.length > 0;
+  if (!temFiltroAtivo) {
+    carrosFiltrados = todosOsCarros;
+    document.getElementById('estoqueContador').textContent =
+      `${todosOsCarros.length} carros encontrados`;
+  }
+}
+
+// ── Popular dropdowns com dados normalizados
 function popularFiltros(carros) {
   const marcas       = [...new Set(carros.map(v => v.marca).filter(Boolean))].sort();
   const cores        = [...new Set(carros.map(v => v.cor).filter(Boolean))].sort();
   const combustiveis = [...new Set(carros.map(v => v.combustivel).filter(Boolean))].sort();
 
-  // Anos reais do estoque para o range slider
   const anos = carros.map(v => parseInt(v.ano_modelo)).filter(Boolean);
   const anoRealMin = Math.min(...anos);
   const anoRealMax = Math.max(...anos);
 
   const sliderMin = document.getElementById('anoMin');
   const sliderMax = document.getElementById('anoMax');
-  sliderMin.min = anoRealMin; sliderMin.max = anoRealMax; sliderMin.value = anoRealMin;
-  sliderMax.min = anoRealMin; sliderMax.max = anoRealMax; sliderMax.value = anoRealMax;
-  filtros.anoMin = anoRealMin;
-  filtros.anoMax = anoRealMax;
-  atualizarRangeUI();
 
-  preencherSelect('filtroMarca', marcas);
-  preencherSelect('filtroCor', cores);
-  preencherSelect('filtroCombustivel', combustiveis);
+  // Só atualiza o slider se ainda não foi mexido pelo usuário
+  if (!filtros._sliderMexido) {
+    sliderMin.min = anoRealMin; sliderMin.max = anoRealMax; sliderMin.value = anoRealMin;
+    sliderMax.min = anoRealMin; sliderMax.max = anoRealMax; sliderMax.value = anoRealMax;
+    filtros.anoMin = anoRealMin;
+    filtros.anoMax = anoRealMax;
+    atualizarRangeUI();
+  }
+
+  // Recria dropdowns preservando seleção atual
+  recriarSelect('filtroMarca', marcas, filtros.marca);
+  recriarSelect('filtroCor', cores, filtros.cor);
+  recriarSelect('filtroCombustivel', combustiveis, filtros.combustivel);
+}
+
+function recriarSelect(id, lista, valorAtual) {
+  const sel = document.getElementById(id);
+  const valorSalvo = valorAtual || sel.value;
+  sel.innerHTML = '<option value="">Selecione uma opção</option>';
+  lista.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item;
+    opt.textContent = item;
+    if (item === valorSalvo) opt.selected = true;
+    sel.appendChild(opt);
+  });
 }
 
 function preencherSelect(id, lista) {
@@ -109,7 +175,6 @@ function aplicarFiltros() {
   const termo = filtros.busca.toLowerCase();
 
   carrosFiltrados = todosOsCarros.filter(v => {
-    // busca por texto
     if (termo) {
       const bate =
         (v.marca  || '').toLowerCase().includes(termo) ||
@@ -118,22 +183,24 @@ function aplicarFiltros() {
         (v.ano_fabricacao || '').toString().includes(termo);
       if (!bate) return false;
     }
-    // marca
     if (filtros.marca && v.marca !== filtros.marca) return false;
-    // modelo
     if (filtros.modelo && v.modelo !== filtros.modelo) return false;
-    // cor
     if (filtros.cor && v.cor !== filtros.cor) return false;
-    // combustível
     if (filtros.combustivel && v.combustivel !== filtros.combustivel) return false;
-    // ano
     const ano = parseInt(v.ano_modelo) || 0;
     if (ano < filtros.anoMin || ano > filtros.anoMax) return false;
-    // carroceria (checkboxes)
     if (filtros.carrocerias.length > 0 && !filtros.carrocerias.includes(v.carroceria)) return false;
-
     return true;
   });
+
+  // Avisa se o carregamento ainda não terminou
+  const temFiltro = filtros.busca || filtros.marca || filtros.modelo ||
+    filtros.cor || filtros.combustivel || filtros.carrocerias.length > 0 ||
+    filtros._sliderMexido;
+  if (!carregamentoCompleto && temFiltro) {
+    document.getElementById('estoqueContador').textContent =
+      '⏳ Carregando estoque completo… resultado parcial';
+  }
 
   carregarPagina(1);
 }
@@ -150,7 +217,15 @@ function carregarPagina(pagina) {
   grid.innerHTML        = '';
   paginacao.innerHTML   = '';
 
-  contador.textContent = `${carrosFiltrados.length} carros encontrados`;
+  const temFiltro = filtros.busca || filtros.marca || filtros.modelo ||
+    filtros.cor || filtros.combustivel || filtros.carrocerias.length > 0 ||
+    filtros._sliderMexido;
+
+  if (!carregamentoCompleto && temFiltro) {
+    contador.textContent = `⏳ ${carrosFiltrados.length} encontrados (carregando mais…)`;
+  } else {
+    contador.textContent = `${carrosFiltrados.length} carros encontrados`;
+  }
 
   if (!carrosFiltrados.length) {
     grid.innerHTML = '<p class="sem-resultados-txt">Nenhum carro encontrado com esses filtros.</p>';
@@ -245,6 +320,7 @@ document.getElementById('anoMin').addEventListener('input', function() {
     this.value = document.getElementById('anoMax').value;
   }
   filtros.anoMin = parseInt(this.value);
+  filtros._sliderMexido = true;
   atualizarRangeUI();
   dispararFiltro();
 });
@@ -254,11 +330,12 @@ document.getElementById('anoMax').addEventListener('input', function() {
     this.value = document.getElementById('anoMin').value;
   }
   filtros.anoMax = parseInt(this.value);
+  filtros._sliderMexido = true;
   atualizarRangeUI();
   dispararFiltro();
 });
 
-// ── Debounce para busca
+// ── Debounce
 let debounceTimer;
 function dispararFiltro() {
   clearTimeout(debounceTimer);
@@ -308,7 +385,7 @@ document.getElementById('checkboxCarroceria').addEventListener('change', functio
 
 // ── Limpar filtros
 document.getElementById('btnLimparFiltros').addEventListener('click', function() {
-  filtros = { busca: '', marca: '', modelo: '', cor: '', combustivel: '', anoMin: 0, anoMax: 9999, carrocerias: [] };
+  filtros = { busca: '', marca: '', modelo: '', cor: '', combustivel: '', anoMin: 0, anoMax: 9999, carrocerias: [], _sliderMexido: false };
 
   document.getElementById('buscaInput').value = '';
   document.getElementById('filtroMarca').value = '';
@@ -327,7 +404,8 @@ document.getElementById('btnLimparFiltros').addEventListener('click', function()
 
   document.querySelectorAll('#checkboxCarroceria input[type=checkbox]').forEach(cb => cb.checked = false);
 
-  aplicarFiltros();
+  carrosFiltrados = todosOsCarros;
+  carregarPagina(1);
 });
 
 // ── Sidebar mobile
@@ -418,4 +496,4 @@ document.getElementById('popupEnviar').addEventListener('click', async function(
 });
 
 // ── Iniciar
-carregarTodosOsCarros();
+iniciar();
