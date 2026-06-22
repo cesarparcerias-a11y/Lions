@@ -125,7 +125,7 @@ async function carregarRestoEmSegundoPlano(totalPaginas) {
 
   if (!temFiltro) {
     carrosFiltrados = todosOsCarros;
-    document.getElementById('estoqueContador').textContent = `${total} carros encontrados`;
+    document.getElementById('estoqueContador').textContent = `${total} carros disponíveis no estoque`;
     renderGrid(paginaAtual); // re-renderiza com paginação completa
   }
 }
@@ -200,10 +200,9 @@ function aplicarFiltros() {
     return true;
   });
 
-  // Aviso se estoque ainda não carregou completo
-  const aviso = !carregamentoCompleto ? ' (carregando mais…)' : '';
+  const aviso = !carregamentoCompleto ? ' (carregando mais…)' : ' disponíveis no estoque';
   document.getElementById('estoqueContador').textContent =
-    `${carrosFiltrados.length} carros encontrados${aviso}`;
+    `${carrosFiltrados.length} carros${aviso}`;
 
   renderGrid(1);
 }
@@ -458,7 +457,7 @@ async function salvarTotalNoSupabase(total) {
         'Authorization': `Bearer ${SUPABASE_KEY}`,
         'Prefer': 'resolution=merge-duplicates'
       },
-      body: JSON.stringify({ chave: 'total_estoque', valor: `+${total} carros disponíveis` })
+      body: JSON.stringify({ chave: 'total_estoque', valor: String(total) })
     });
   } catch(e) {}
 }
