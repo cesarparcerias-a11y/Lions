@@ -113,6 +113,9 @@ async function carregarRestoEmSegundoPlano(totalPaginas) {
   const tituloEm = document.querySelector('.estoque-page-titulo em');
   if (tituloEm) tituloEm.textContent = `+${total} carros disponíveis`;
 
+  // Gera bloco SEO com todos os carros para o Google indexar
+  gerarSEOCarros(todosOsCarros);
+
   // Só atualiza grid/contador se nenhum filtro estiver ativo
   const temFiltro = filtros.busca || filtros.marca || filtros.modelo ||
     filtros.cor || filtros.combustivel || filtros.carrocerias.length > 0 || filtros._sliderMexido;
@@ -439,6 +442,25 @@ document.getElementById('popupEnviar').addEventListener('click', async function(
     erro.textContent = 'Erro ao enviar. Tente novamente.'; erro.style.display = 'block';
   }
 });
+
+// ── Gerar bloco SEO com carros reais para indexação do Google
+function gerarSEOCarros(carros) {
+  const el = document.getElementById('seoCarros');
+  if (!el) return;
+
+  // Lista única de "Marca Modelo Ano" para o Google ler
+  const itens = [...new Set(
+    carros.map(v => `${v.marca} ${v.modelo} ${v.ano_modelo}`.trim())
+  )].sort();
+
+  // Marcas únicas
+  const marcas = [...new Set(carros.map(v => v.marca).filter(Boolean))].sort();
+
+  el.innerHTML = `
+    <p>Seminovos disponíveis no estoque Lions: ${itens.join(', ')}.</p>
+    <p>Marcas no estoque: ${marcas.join(', ')}. Total de ${carros.length} veículos seminovos disponíveis para financiamento. Compre seu carro seminovo pela indicação do Cesar Bittencourt, parceiro Lions Seminovos.</p>
+  `;
+}
 
 // ── Iniciar
 iniciar();
