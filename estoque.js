@@ -31,47 +31,54 @@ async function carregarPagina(pagina) {
   paginacao.innerHTML    = '';
 
   try {
-    let url = `${API_LIONS}?pagina=${pagina}&quantidade=16`;
-    if (filtroCarroceria !== 'todos') url += `&carroceria=${filtroCarroceria}`;
-    if (filtroBusca) url += `&busca=${encodeURIComponent(filtroBusca)}`;
-
-    const res  = await fetch(url);
-    const data = await res.json();
-
-    paginaAtual  = data.paginaAtual;
-    totalPaginas = data.totalPaginas;
-
-    contador.textContent = `${data.totalRegistros} carros encontrados`;
-
-    if (!data.veiculos.length) {
-      grid.innerHTML = '<p class="sem-resultados-txt">Nenhum carro encontrado.</p>';
-      loading.style.display = 'none';
-      return;
+    if (filtroBusca) {
+      // Busca local: busca todos os carros e filtra no navegador
+      let todos = [];
+      let p = 1;
+      while (true) {
+        let url = `${API_LIONS}?pagina=${p}&quantidade=100`;
+        if (filtroCarroceria !== 'todos') url += `&carroceria=${filtroCarroceria}`;
+        const res  = await fetch(url);
+        const data = await res.json();
+        todos = todos.concat(data.veiculos || []);
+        if (p >= data.totalPaginas) break;
+        p++;
+      }
+      const termo = filtroBusca.toLowerCase();
+      const filtrados = todos.filter(v =>
+        (v.marca  || '').toLowerCase().includes(termo) ||
+        (v.modelo || '').toLowerCase().includes(termo) ||
+        (v.cor    || '').toLowerCase().includes(termo) ||
+        (v.ano_fabricacao || '').toString().includes(termo)
+      );
+      contador.textContent = `${filtrados.length} carros encontrados`;
+      if (!filtrados.length) {
+        grid.innerHTML = '<p class="sem-resultados-txt">Nenhum carro encontrado.</p>';
+        loading.style.display = 'none';
+        return;
+      }
+      const porPagina = 16;
+      const totalPag  = Math.ceil(filtrados.length / porPagina);
+      const inicio    = (pagina - 1) * porPagina;
+      filtrados.slice(inicio, inicio + porPagina).forEach(v => renderCard(grid, v));
+      renderizarPaginacaoLocal(pagina, totalPag);
+    } else {
+      // Busca normal paginada
+      let url = `${API_LIONS}?pagina=${pagina}&quantidade=16`;
+      if (filtroCarroceria !== 'todos') url += `&carroceria=${filtroCarroceria}`;
+      const res  = await fetch(url);
+      const data = await res.json();
+      paginaAtual  = data.paginaAtual;
+      totalPaginas = data.totalPaginas;
+      contador.textContent = `${data.totalRegistros} carros encontrados`;
+      if (!data.veiculos.length) {
+        grid.innerHTML = '<p class="sem-resultados-txt">Nenhum carro encontrado.</p>';
+        loading.style.display = 'none';
+        return;
+      }
+      data.veiculos.forEach(v => renderCard(grid, v));
+      renderizarPaginacao(paginaAtual, totalPaginas);
     }
-
-    data.veiculos.forEach(v => {
-      const card = document.createElement('div');
-      card.className = 'ep-card';
-      card.innerHTML = `
-        <div class="ep-foto">
-          <img src="${v.media_links.frente}" alt="${v.marca} ${v.modelo}" loading="lazy"
-               onerror="this.src='https://via.placeholder.com/280x180/1a1a1a/666?text=Sem+foto'" />
-        </div>
-        <div class="ep-info">
-          <p class="ep-marca">${v.marca}</p>
-          <h3 class="ep-modelo">${v.modelo}</h3>
-          <div class="ep-detalhes">
-            <span>📅 ${v.ano_fabricacao}/${v.ano_modelo}</span>
-            <span>🛣️ ${formatKm(v.km)}</span>
-            <span>🎨 ${v.cor}</span>
-          </div>
-          <button class="btn-carro" onclick='abrirPopup(${JSON.stringify(v)})'>Tenho interesse</button>
-        </div>`;
-      grid.appendChild(card);
-    });
-
-    renderizarPaginacao(paginaAtual, totalPaginas);
-
   } catch (err) {
     erroEl.style.display = 'block';
   } finally {
@@ -79,6 +86,29 @@ async function carregarPagina(pagina) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
+
+// ── Renderizar card individual
+function renderCard(grid, v) {
+  const card = document.createElement('div');
+  card.className = 'ep-card';
+  card.innerHTML = `
+    <div class="ep-foto">
+      <img src="${v.media_links.frente}" alt="${v.marca} ${v.modelo}" loading="lazy"
+           onerror="this.src='https://via.placeholder.com/280x180/1a1a1a/666?text=Sem+foto'" />
+    </div>
+    <div class="ep-info">
+      <p class="ep-marca">${v.marca}</p>
+      <h3 class="ep-modelo">${v.modelo}</h3>
+      <div class="ep-detalhes">
+        <span>📅 ${v.ano_fabricacao}/${v.ano_modelo}</span>
+        <span>🛣️ ${formatKm(v.km)}</span>
+        <span>🎨 ${v.cor}</span>
+      </div>
+      <button class="btn-carro" onclick='abrirPopup(${JSON.stringify(v)})'>Tenho interesse</button>
+    </div>`;
+  grid.appendChild(card);
+}
+
 
 // ── Paginação
 function renderizarPaginacao(atual, total) {
@@ -102,6 +132,29 @@ function renderizarPaginacao(atual, total) {
   for (let i = inicio; i <= fim; i++) criar(i, i, i === atual);
   if (fim < total) { if (fim < total - 1) criar('…', null, false, true); criar(total, total); }
 
+  criar('›', atual + 1, false, atual === total);
+}
+
+// ── Paginação local (para busca client-side)
+function renderizarPaginacaoLocal(atual, total) {
+  const paginacao = document.getElementById('paginacao');
+  paginacao.innerHTML = '';
+  if (total <= 1) return;
+
+  const criar = (texto, pagina, ativo = false, desabilitado = false) => {
+    const btn = document.createElement('button');
+    btn.className = 'pag-btn' + (ativo ? ' ativo' : '') + (desabilitado ? ' desabilitado' : '');
+    btn.textContent = texto;
+    if (!desabilitado) btn.addEventListener('click', () => carregarPagina(pagina));
+    paginacao.appendChild(btn);
+  };
+
+  criar('‹', atual - 1, false, atual === 1);
+  const inicio = Math.max(1, atual - 2);
+  const fim    = Math.min(total, atual + 2);
+  if (inicio > 1) { criar('1', 1); if (inicio > 2) criar('…', null, false, true); }
+  for (let i = inicio; i <= fim; i++) criar(i, i, i === atual);
+  if (fim < total) { if (fim < total - 1) criar('…', null, false, true); criar(total, total); }
   criar('›', atual + 1, false, atual === total);
 }
 
