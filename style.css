@@ -318,12 +318,15 @@ a{text-decoration:none;color:inherit}
   .filtros-sidebar{position:fixed;top:0;left:0;bottom:0;width:300px;z-index:200;border-radius:0;overflow-y:auto;transform:translateX(-100%);transition:transform .3s ease}
   .filtros-sidebar.aberta{transform:translateX(0)}
   .btn-fechar-sidebar{display:block}
-  /* 1 coluna no mobile */
+  /* 1 coluna no mobile — foto em cima, info embaixo */
   .estoque-page-grid{grid-template-columns:1fr!important}
-  .ep-card{display:grid;grid-template-columns:120px 1fr;border-radius:12px;overflow:hidden}
-  .ep-foto{height:auto;min-height:100px}
-  .ep-info{padding:12px}
-  .ep-modelo{font-size:15px}
+  .ep-card{display:flex;flex-direction:column;border-radius:12px;overflow:hidden}
+  .ep-foto{height:200px;width:100%}
+  .ep-foto img{width:100%;height:100%;object-fit:cover}
+  .ep-info{padding:14px}
+  .ep-modelo{font-size:17px}
+  .ep-detalhes{font-size:13px}
+  .btn-carro{padding:14px;font-size:17px}
 
   .hero-logo{height:36px;top:16px;left:16px}
   .criativo{flex-direction:column!important;min-height:auto;max-height:none!important}
