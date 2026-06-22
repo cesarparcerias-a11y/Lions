@@ -111,7 +111,7 @@ async function carregarRestoEmSegundoPlano(totalPaginas) {
 
   // Atualiza título da página estoque com número real
   const tituloEm = document.querySelector('.estoque-page-titulo em');
-  if (tituloEm) tituloEm.textContent = `+${total} carros disponíveis`;
+  if (tituloEm) tituloEm.textContent = `${total} carros disponíveis`;
 
   // Salva o total no Supabase para a home ler
   salvarTotalNoSupabase(total);
