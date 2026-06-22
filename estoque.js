@@ -79,8 +79,13 @@ async function iniciar() {
     todosOsCarros   = primeiros;
     carrosFiltrados = primeiros;
 
+    // Atualiza título do hero com número real do estoque
+    const totalReal = data1.totalRegistros || primeiros.length;
+    const tituloEm  = document.querySelector('.estoque-page-titulo em');
+    if (tituloEm) tituloEm.textContent = `+${totalReal} carros disponíveis`;
+
     loading.style.display = 'none';
-    document.getElementById('estoqueContador').textContent = `${data1.totalRegistros || primeiros.length} carros encontrados`;
+    document.getElementById('estoqueContador').textContent = `${totalReal} carros encontrados`;
     renderGrid(1);
 
     atualizarProgresso(1, totalPaginas);
@@ -195,6 +200,11 @@ function aplicarFiltros() {
   renderGrid(1);
 }
 
+// ── Detectar mobile
+function isMobile() {
+  return window.innerWidth <= 768;
+}
+
 // ── Renderizar grid
 function renderGrid(pagina) {
   paginaAtual = pagina;
@@ -208,12 +218,18 @@ function renderGrid(pagina) {
     return;
   }
 
-  const porPagina = 16;
-  const totalPag  = Math.ceil(carrosFiltrados.length / porPagina);
-  const inicio    = (pagina - 1) * porPagina;
-  carrosFiltrados.slice(inicio, inicio + porPagina).forEach(v => renderCard(grid, v));
-  renderizarPaginacao(pagina, totalPag);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (isMobile()) {
+    // Mobile: rolagem infinita — mostra tudo de uma vez
+    carrosFiltrados.forEach(v => renderCard(grid, v));
+  } else {
+    // Desktop: paginação com 18 carros (6 linhas × 3 colunas)
+    const porPagina = 18;
+    const totalPag  = Math.ceil(carrosFiltrados.length / porPagina);
+    const inicio    = (pagina - 1) * porPagina;
+    carrosFiltrados.slice(inicio, inicio + porPagina).forEach(v => renderCard(grid, v));
+    renderizarPaginacao(pagina, totalPag);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 }
 
 function renderCard(grid, v) {
