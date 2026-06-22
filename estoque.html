@@ -36,47 +36,118 @@
     </div>
   </section>
 
-  <!-- FILTROS + GRID -->
+  <!-- LAYOUT COM SIDEBAR -->
   <section class="estoque-page-section">
     <div class="container">
+      <div class="estoque-layout">
 
-      <!-- Busca e filtros -->
-      <div class="estoque-filtros-bar">
-        <input type="text" id="buscaInput" class="busca-input" placeholder="🔍  Buscar por modelo, marca ou cor…" />
-        <div class="filtros-chips" id="filtrosChips">
-          <button class="chip ativo" data-filtro="todos">Todos</button>
-          <button class="chip" data-filtro="Hatch">Hatch</button>
-          <button class="chip" data-filtro="Sedan">Sedan</button>
-          <button class="chip" data-filtro="SUV">SUV</button>
-          <button class="chip" data-filtro="Picape">Picape</button>
-          <button class="chip" data-filtro="Utilitario">Utilitário</button>
-          <button class="chip" data-filtro="Moto">Moto</button>
+        <!-- SIDEBAR DE FILTROS -->
+        <aside class="filtros-sidebar">
+          <div class="sidebar-header">
+            <span class="sidebar-titulo">Filtros</span>
+            <button class="btn-limpar-filtros" id="btnLimparFiltros">Limpar</button>
+          </div>
+
+          <!-- Busca -->
+          <div class="sidebar-grupo">
+            <input type="text" id="buscaInput" class="busca-input" placeholder="🔍  Buscar…" />
+          </div>
+
+          <!-- Marca -->
+          <div class="sidebar-grupo">
+            <label class="sidebar-label">Marca</label>
+            <select id="filtroMarca" class="sidebar-select">
+              <option value="">Selecione uma opção</option>
+            </select>
+          </div>
+
+          <!-- Modelo -->
+          <div class="sidebar-grupo">
+            <label class="sidebar-label">Modelo</label>
+            <select id="filtroModelo" class="sidebar-select">
+              <option value="">Selecione uma opção</option>
+            </select>
+          </div>
+
+          <!-- Cor -->
+          <div class="sidebar-grupo">
+            <label class="sidebar-label">Cor</label>
+            <select id="filtroCor" class="sidebar-select">
+              <option value="">Selecione uma opção</option>
+            </select>
+          </div>
+
+          <!-- Combustível -->
+          <div class="sidebar-grupo">
+            <label class="sidebar-label">Combustível</label>
+            <select id="filtroCombustivel" class="sidebar-select">
+              <option value="">Selecione uma opção</option>
+            </select>
+          </div>
+
+          <!-- Ano modelo (range slider) -->
+          <div class="sidebar-grupo">
+            <label class="sidebar-label">Ano modelo — <strong id="anoLabel">Todos</strong></label>
+            <div class="range-wrapper">
+              <input type="range" id="anoMin" class="range-slider" min="2005" max="2026" value="2005" />
+              <input type="range" id="anoMax" class="range-slider" min="2005" max="2026" value="2026" />
+              <div class="range-track">
+                <div class="range-fill" id="rangeFill"></div>
+              </div>
+            </div>
+            <div class="range-valores">
+              <span id="anoMinVal">2005</span>
+              <span id="anoMaxVal">2026</span>
+            </div>
+          </div>
+
+          <!-- Carroceria (checkboxes) -->
+          <div class="sidebar-grupo">
+            <label class="sidebar-label">Carroceria</label>
+            <div class="checkbox-lista" id="checkboxCarroceria">
+              <label class="checkbox-item"><input type="checkbox" value="Hatch" /> Hatch</label>
+              <label class="checkbox-item"><input type="checkbox" value="Moto" /> Moto</label>
+              <label class="checkbox-item"><input type="checkbox" value="Picape" /> Picape</label>
+              <label class="checkbox-item"><input type="checkbox" value="Sedan" /> Sedan</label>
+              <label class="checkbox-item"><input type="checkbox" value="SUV" /> SUV</label>
+              <label class="checkbox-item"><input type="checkbox" value="Utilitario" /> Utilitário</label>
+            </div>
+          </div>
+
+        </aside>
+
+        <!-- ÁREA PRINCIPAL -->
+        <div class="estoque-main">
+
+          <!-- Contador -->
+          <p class="estoque-contador" id="estoqueContador"></p>
+
+          <!-- Loading -->
+          <div class="loading-estado" id="loadingEstado">
+            <div class="spinner-grande"></div>
+            <p>Carregando estoque…</p>
+          </div>
+
+          <!-- Erro -->
+          <div class="erro-estado" id="erroEstado" style="display:none;">
+            <p>⚠️ Não foi possível carregar o estoque agora.</p>
+            <button class="btn-tentar" onclick="carregarPagina(1)">Tentar novamente</button>
+          </div>
+
+          <!-- Grid -->
+          <div class="estoque-page-grid" id="estoqueGrid"></div>
+
+          <!-- Paginação -->
+          <div class="paginacao" id="paginacao"></div>
+
         </div>
       </div>
-
-      <!-- Contador -->
-      <p class="estoque-contador" id="estoqueContador"></p>
-
-      <!-- Loading -->
-      <div class="loading-estado" id="loadingEstado">
-        <div class="spinner-grande"></div>
-        <p>Carregando estoque…</p>
-      </div>
-
-      <!-- Erro -->
-      <div class="erro-estado" id="erroEstado" style="display:none;">
-        <p>⚠️ Não foi possível carregar o estoque agora.</p>
-        <button class="btn-tentar" onclick="carregarPagina(1)">Tentar novamente</button>
-      </div>
-
-      <!-- Grid -->
-      <div class="estoque-page-grid" id="estoqueGrid"></div>
-
-      <!-- Paginação -->
-      <div class="paginacao" id="paginacao"></div>
-
     </div>
   </section>
+
+  <!-- Botão mobile para abrir filtros -->
+  <button class="btn-filtros-mobile" id="btnFiltrosMobile">⚙️ Filtros</button>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
   <!-- POPUP DO CARRO -->
   <div class="popup-overlay" id="popupOverlay">

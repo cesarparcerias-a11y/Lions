@@ -6,85 +6,163 @@ const MATRICULA_PARCEIRO = '40756';
 const EMAIL_PARCEIRO     = 'cesar.parcerias@gmail.com';
 const API_LIONS = 'https://n8n-production-1b10.up.railway.app/webhook/estoque-lions';
 
-let paginaAtual   = 1;
-let totalPaginas  = 1;
+let paginaAtual      = 1;
 let carroSelecionado = null;
-let filtroBusca   = '';
-let filtroCarroceria = 'todos';
+let todosOsCarros    = []; // cache de todos os carros
+let carrosFiltrados  = []; // resultado após filtros
+
+// Estado dos filtros
+let filtros = {
+  busca: '',
+  marca: '',
+  modelo: '',
+  cor: '',
+  combustivel: '',
+  anoMin: 2005,
+  anoMax: 2026,
+  carrocerias: []
+};
 
 // ── Formatar km
 function formatKm(km) {
   return parseInt(km).toLocaleString('pt-BR') + ' km';
 }
 
-// ── Carregar página do estoque
-async function carregarPagina(pagina) {
-  const grid      = document.getElementById('estoqueGrid');
-  const loading   = document.getElementById('loadingEstado');
-  const erroEl    = document.getElementById('erroEstado');
-  const contador  = document.getElementById('estoqueContador');
-  const paginacao = document.getElementById('paginacao');
+// ── Carregar TODOS os carros da API uma vez só
+async function carregarTodosOsCarros() {
+  const loading = document.getElementById('loadingEstado');
+  const erroEl  = document.getElementById('erroEstado');
 
-  loading.style.display  = 'flex';
-  erroEl.style.display   = 'none';
-  grid.innerHTML         = '';
-  paginacao.innerHTML    = '';
+  loading.style.display = 'flex';
+  erroEl.style.display  = 'none';
 
   try {
-    if (filtroBusca) {
-      // Busca local: busca todos os carros e filtra no navegador
-      let todos = [];
-      let p = 1;
-      while (true) {
-        let url = `${API_LIONS}?pagina=${p}&quantidade=100`;
-        if (filtroCarroceria !== 'todos') url += `&carroceria=${filtroCarroceria}`;
-        const res  = await fetch(url);
-        const data = await res.json();
-        todos = todos.concat(data.veiculos || []);
-        if (p >= data.totalPaginas) break;
-        p++;
-      }
-      const termo = filtroBusca.toLowerCase();
-      const filtrados = todos.filter(v =>
+    let todos = [];
+    let p = 1;
+    while (true) {
+      const res  = await fetch(`${API_LIONS}?pagina=${p}&quantidade=100`);
+      const data = await res.json();
+      todos = todos.concat(data.veiculos || []);
+      if (p >= data.totalPaginas) break;
+      p++;
+    }
+    todosOsCarros = todos;
+    popularFiltros(todos);
+    aplicarFiltros();
+  } catch (err) {
+    erroEl.style.display  = 'block';
+    loading.style.display = 'none';
+  }
+}
+
+// ── Popular dropdowns com os dados reais do estoque
+function popularFiltros(carros) {
+  const marcas       = [...new Set(carros.map(v => v.marca).filter(Boolean))].sort();
+  const cores        = [...new Set(carros.map(v => v.cor).filter(Boolean))].sort();
+  const combustiveis = [...new Set(carros.map(v => v.combustivel).filter(Boolean))].sort();
+
+  // Anos reais do estoque para o range slider
+  const anos = carros.map(v => parseInt(v.ano_modelo)).filter(Boolean);
+  const anoRealMin = Math.min(...anos);
+  const anoRealMax = Math.max(...anos);
+
+  const sliderMin = document.getElementById('anoMin');
+  const sliderMax = document.getElementById('anoMax');
+  sliderMin.min = anoRealMin; sliderMin.max = anoRealMax; sliderMin.value = anoRealMin;
+  sliderMax.min = anoRealMin; sliderMax.max = anoRealMax; sliderMax.value = anoRealMax;
+  filtros.anoMin = anoRealMin;
+  filtros.anoMax = anoRealMax;
+  atualizarRangeUI();
+
+  preencherSelect('filtroMarca', marcas);
+  preencherSelect('filtroCor', cores);
+  preencherSelect('filtroCombustivel', combustiveis);
+}
+
+function preencherSelect(id, lista) {
+  const sel = document.getElementById(id);
+  lista.forEach(item => {
+    const opt = document.createElement('option');
+    opt.value = item;
+    opt.textContent = item;
+    sel.appendChild(opt);
+  });
+}
+
+// ── Atualizar dropdown de modelo conforme marca selecionada
+function atualizarModelos(marca) {
+  const sel = document.getElementById('filtroModelo');
+  sel.innerHTML = '<option value="">Selecione uma opção</option>';
+  if (!marca) return;
+  const modelos = [...new Set(
+    todosOsCarros.filter(v => v.marca === marca).map(v => v.modelo).filter(Boolean)
+  )].sort();
+  modelos.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m; opt.textContent = m;
+    sel.appendChild(opt);
+  });
+}
+
+// ── Aplicar todos os filtros e renderizar
+function aplicarFiltros() {
+  const termo = filtros.busca.toLowerCase();
+
+  carrosFiltrados = todosOsCarros.filter(v => {
+    // busca por texto
+    if (termo) {
+      const bate =
         (v.marca  || '').toLowerCase().includes(termo) ||
         (v.modelo || '').toLowerCase().includes(termo) ||
         (v.cor    || '').toLowerCase().includes(termo) ||
-        (v.ano_fabricacao || '').toString().includes(termo)
-      );
-      contador.textContent = `${filtrados.length} carros encontrados`;
-      if (!filtrados.length) {
-        grid.innerHTML = '<p class="sem-resultados-txt">Nenhum carro encontrado.</p>';
-        loading.style.display = 'none';
-        return;
-      }
-      const porPagina = 16;
-      const totalPag  = Math.ceil(filtrados.length / porPagina);
-      const inicio    = (pagina - 1) * porPagina;
-      filtrados.slice(inicio, inicio + porPagina).forEach(v => renderCard(grid, v));
-      renderizarPaginacaoLocal(pagina, totalPag);
-    } else {
-      // Busca normal paginada
-      let url = `${API_LIONS}?pagina=${pagina}&quantidade=16`;
-      if (filtroCarroceria !== 'todos') url += `&carroceria=${filtroCarroceria}`;
-      const res  = await fetch(url);
-      const data = await res.json();
-      paginaAtual  = data.paginaAtual;
-      totalPaginas = data.totalPaginas;
-      contador.textContent = `${data.totalRegistros} carros encontrados`;
-      if (!data.veiculos.length) {
-        grid.innerHTML = '<p class="sem-resultados-txt">Nenhum carro encontrado.</p>';
-        loading.style.display = 'none';
-        return;
-      }
-      data.veiculos.forEach(v => renderCard(grid, v));
-      renderizarPaginacao(paginaAtual, totalPaginas);
+        (v.ano_fabricacao || '').toString().includes(termo);
+      if (!bate) return false;
     }
-  } catch (err) {
-    erroEl.style.display = 'block';
-  } finally {
-    loading.style.display = 'none';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    // marca
+    if (filtros.marca && v.marca !== filtros.marca) return false;
+    // modelo
+    if (filtros.modelo && v.modelo !== filtros.modelo) return false;
+    // cor
+    if (filtros.cor && v.cor !== filtros.cor) return false;
+    // combustível
+    if (filtros.combustivel && v.combustivel !== filtros.combustivel) return false;
+    // ano
+    const ano = parseInt(v.ano_modelo) || 0;
+    if (ano < filtros.anoMin || ano > filtros.anoMax) return false;
+    // carroceria (checkboxes)
+    if (filtros.carrocerias.length > 0 && !filtros.carrocerias.includes(v.carroceria)) return false;
+
+    return true;
+  });
+
+  carregarPagina(1);
+}
+
+// ── Renderizar página
+function carregarPagina(pagina) {
+  paginaAtual = pagina;
+  const grid      = document.getElementById('estoqueGrid');
+  const loading   = document.getElementById('loadingEstado');
+  const contador  = document.getElementById('estoqueContador');
+  const paginacao = document.getElementById('paginacao');
+
+  loading.style.display = 'none';
+  grid.innerHTML        = '';
+  paginacao.innerHTML   = '';
+
+  contador.textContent = `${carrosFiltrados.length} carros encontrados`;
+
+  if (!carrosFiltrados.length) {
+    grid.innerHTML = '<p class="sem-resultados-txt">Nenhum carro encontrado com esses filtros.</p>';
+    return;
   }
+
+  const porPagina = 16;
+  const totalPag  = Math.ceil(carrosFiltrados.length / porPagina);
+  const inicio    = (pagina - 1) * porPagina;
+  carrosFiltrados.slice(inicio, inicio + porPagina).forEach(v => renderCard(grid, v));
+  renderizarPaginacao(pagina, totalPag);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ── Renderizar card individual
@@ -109,7 +187,6 @@ function renderCard(grid, v) {
   grid.appendChild(card);
 }
 
-
 // ── Paginação
 function renderizarPaginacao(atual, total) {
   const paginacao = document.getElementById('paginacao');
@@ -125,31 +202,6 @@ function renderizarPaginacao(atual, total) {
   };
 
   criar('‹', atual - 1, false, atual === 1);
-
-  const inicio = Math.max(1, atual - 2);
-  const fim    = Math.min(total, atual + 2);
-  if (inicio > 1) { criar('1', 1); if (inicio > 2) criar('…', null, false, true); }
-  for (let i = inicio; i <= fim; i++) criar(i, i, i === atual);
-  if (fim < total) { if (fim < total - 1) criar('…', null, false, true); criar(total, total); }
-
-  criar('›', atual + 1, false, atual === total);
-}
-
-// ── Paginação local (para busca client-side)
-function renderizarPaginacaoLocal(atual, total) {
-  const paginacao = document.getElementById('paginacao');
-  paginacao.innerHTML = '';
-  if (total <= 1) return;
-
-  const criar = (texto, pagina, ativo = false, desabilitado = false) => {
-    const btn = document.createElement('button');
-    btn.className = 'pag-btn' + (ativo ? ' ativo' : '') + (desabilitado ? ' desabilitado' : '');
-    btn.textContent = texto;
-    if (!desabilitado) btn.addEventListener('click', () => carregarPagina(pagina));
-    paginacao.appendChild(btn);
-  };
-
-  criar('‹', atual - 1, false, atual === 1);
   const inicio = Math.max(1, atual - 2);
   const fim    = Math.min(total, atual + 2);
   if (inicio > 1) { criar('1', 1); if (inicio > 2) criar('…', null, false, true); }
@@ -158,23 +210,134 @@ function renderizarPaginacaoLocal(atual, total) {
   criar('›', atual + 1, false, atual === total);
 }
 
-// ── Filtros por carroceria
-document.getElementById('filtrosChips').addEventListener('click', function(e) {
-  if (!e.target.dataset.filtro) return;
-  document.querySelectorAll('.chip').forEach(c => c.classList.remove('ativo'));
-  e.target.classList.add('ativo');
-  filtroCarroceria = e.target.dataset.filtro;
-  carregarPagina(1);
+// ── Range slider (ano)
+function atualizarRangeUI() {
+  const sliderMin = document.getElementById('anoMin');
+  const sliderMax = document.getElementById('anoMax');
+  const fill      = document.getElementById('rangeFill');
+  const minVal    = document.getElementById('anoMinVal');
+  const maxVal    = document.getElementById('anoMaxVal');
+  const label     = document.getElementById('anoLabel');
+
+  const min = parseInt(sliderMin.min);
+  const max = parseInt(sliderMin.max);
+  const valMin = parseInt(sliderMin.value);
+  const valMax = parseInt(sliderMax.value);
+
+  const pctMin = ((valMin - min) / (max - min)) * 100;
+  const pctMax = ((valMax - min) / (max - min)) * 100;
+
+  fill.style.left  = pctMin + '%';
+  fill.style.width = (pctMax - pctMin) + '%';
+
+  minVal.textContent = valMin;
+  maxVal.textContent = valMax;
+
+  if (valMin === min && valMax === max) {
+    label.textContent = 'Todos';
+  } else {
+    label.textContent = valMin + ' / ' + valMax;
+  }
+}
+
+document.getElementById('anoMin').addEventListener('input', function() {
+  if (parseInt(this.value) > parseInt(document.getElementById('anoMax').value)) {
+    this.value = document.getElementById('anoMax').value;
+  }
+  filtros.anoMin = parseInt(this.value);
+  atualizarRangeUI();
+  dispararFiltro();
 });
 
-// ── Busca com debounce
+document.getElementById('anoMax').addEventListener('input', function() {
+  if (parseInt(this.value) < parseInt(document.getElementById('anoMin').value)) {
+    this.value = document.getElementById('anoMin').value;
+  }
+  filtros.anoMax = parseInt(this.value);
+  atualizarRangeUI();
+  dispararFiltro();
+});
+
+// ── Debounce para busca
 let debounceTimer;
-document.getElementById('buscaInput').addEventListener('input', function() {
+function dispararFiltro() {
   clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => {
-    filtroBusca = this.value.trim();
-    carregarPagina(1);
-  }, 500);
+  debounceTimer = setTimeout(aplicarFiltros, 400);
+}
+
+// ── Eventos dos filtros
+document.getElementById('buscaInput').addEventListener('input', function() {
+  filtros.busca = this.value.trim();
+  dispararFiltro();
+});
+
+document.getElementById('filtroMarca').addEventListener('change', function() {
+  filtros.marca  = this.value;
+  filtros.modelo = '';
+  document.getElementById('filtroModelo').value = '';
+  atualizarModelos(this.value);
+  aplicarFiltros();
+});
+
+document.getElementById('filtroModelo').addEventListener('change', function() {
+  filtros.modelo = this.value;
+  aplicarFiltros();
+});
+
+document.getElementById('filtroCor').addEventListener('change', function() {
+  filtros.cor = this.value;
+  aplicarFiltros();
+});
+
+document.getElementById('filtroCombustivel').addEventListener('change', function() {
+  filtros.combustivel = this.value;
+  aplicarFiltros();
+});
+
+// ── Checkboxes de carroceria
+document.getElementById('checkboxCarroceria').addEventListener('change', function(e) {
+  if (!e.target.matches('input[type=checkbox]')) return;
+  const val = e.target.value;
+  if (e.target.checked) {
+    filtros.carrocerias.push(val);
+  } else {
+    filtros.carrocerias = filtros.carrocerias.filter(c => c !== val);
+  }
+  aplicarFiltros();
+});
+
+// ── Limpar filtros
+document.getElementById('btnLimparFiltros').addEventListener('click', function() {
+  filtros = { busca: '', marca: '', modelo: '', cor: '', combustivel: '', anoMin: 0, anoMax: 9999, carrocerias: [] };
+
+  document.getElementById('buscaInput').value = '';
+  document.getElementById('filtroMarca').value = '';
+  document.getElementById('filtroModelo').value = '';
+  document.getElementById('filtroModelo').innerHTML = '<option value="">Selecione uma opção</option>';
+  document.getElementById('filtroCor').value = '';
+  document.getElementById('filtroCombustivel').value = '';
+
+  const sliderMin = document.getElementById('anoMin');
+  const sliderMax = document.getElementById('anoMax');
+  filtros.anoMin = parseInt(sliderMin.min);
+  filtros.anoMax = parseInt(sliderMax.max);
+  sliderMin.value = sliderMin.min;
+  sliderMax.value = sliderMax.max;
+  atualizarRangeUI();
+
+  document.querySelectorAll('#checkboxCarroceria input[type=checkbox]').forEach(cb => cb.checked = false);
+
+  aplicarFiltros();
+});
+
+// ── Sidebar mobile
+document.getElementById('btnFiltrosMobile').addEventListener('click', function() {
+  document.querySelector('.filtros-sidebar').classList.add('aberta');
+  document.getElementById('sidebarOverlay').classList.add('ativo');
+});
+document.getElementById('sidebarOverlay').addEventListener('click', function() {
+  document.querySelector('.filtros-sidebar').classList.remove('aberta');
+  this.classList.remove('ativo');
 });
 
 // ── Popup
@@ -255,4 +418,4 @@ document.getElementById('popupEnviar').addEventListener('click', async function(
 });
 
 // ── Iniciar
-carregarPagina(1);
+carregarTodosOsCarros();

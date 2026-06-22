@@ -246,7 +246,51 @@ a{text-decoration:none;color:inherit}
 
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* ══ SIDEBAR DE FILTROS (ESTOQUE) ══ */
+.estoque-layout{display:grid;grid-template-columns:280px 1fr;gap:32px;align-items:start}
+.estoque-main{min-width:0}
+
+.filtros-sidebar{background:var(--preto-card);border:1px solid var(--borda);border-radius:16px;padding:24px;position:sticky;top:24px}
+.sidebar-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.sidebar-titulo{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+.btn-limpar-filtros{background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:6px;color:var(--cinza);font-size:12px;padding:5px 12px;cursor:pointer;transition:all .2s}
+.btn-limpar-filtros:hover{border-color:var(--vermelho);color:var(--vermelho)}
+
+.sidebar-grupo{margin-bottom:20px}
+.sidebar-label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#777;margin-bottom:8px}
+.sidebar-select{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 12px;font-family:'Barlow',sans-serif;font-size:14px;color:var(--branco);outline:none;transition:border-color .2s;appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23888' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.sidebar-select:focus{border-color:var(--vermelho)}
+.sidebar-select option{background:var(--preto-card);color:var(--branco)}
+
+/* Range slider */
+.range-wrapper{position:relative;height:36px;margin-bottom:6px}
+.range-track{position:absolute;top:50%;left:0;right:0;height:4px;background:rgba(255,255,255,.1);border-radius:2px;transform:translateY(-50%);pointer-events:none}
+.range-fill{position:absolute;height:100%;background:var(--vermelho);border-radius:2px}
+.range-slider{position:absolute;top:50%;width:100%;transform:translateY(-50%);appearance:none;background:transparent;pointer-events:none;z-index:2}
+.range-slider::-webkit-slider-thumb{appearance:none;width:18px;height:18px;border-radius:50%;background:var(--vermelho);border:2px solid var(--branco);cursor:pointer;pointer-events:all;box-shadow:0 0 0 3px rgba(200,16,46,.25)}
+.range-slider::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--vermelho);border:2px solid var(--branco);cursor:pointer;pointer-events:all}
+.range-valores{display:flex;justify-content:space-between;font-size:12px;color:var(--cinza)}
+
+/* Checkboxes carroceria */
+.checkbox-lista{display:flex;flex-direction:column;gap:8px}
+.checkbox-item{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--cinza);cursor:pointer;padding:4px 0;transition:color .2s}
+.checkbox-item:hover{color:var(--branco)}
+.checkbox-item input[type=checkbox]{appearance:none;width:16px;height:16px;border:1px solid rgba(255,255,255,.2);border-radius:4px;background:rgba(255,255,255,.04);cursor:pointer;flex-shrink:0;transition:all .2s;position:relative}
+.checkbox-item input[type=checkbox]:checked{background:var(--vermelho);border-color:var(--vermelho)}
+.checkbox-item input[type=checkbox]:checked::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:10px;color:#fff;font-weight:700}
+
+/* Botão mobile filtros */
+.btn-filtros-mobile{display:none;position:fixed;bottom:24px;right:24px;background:var(--vermelho);color:var(--branco);border:none;border-radius:100px;padding:14px 22px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;text-transform:uppercase;cursor:pointer;z-index:100;box-shadow:0 4px 20px rgba(200,16,46,.5)}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:199;backdrop-filter:blur(3px)}
+.sidebar-overlay.ativo{display:block}
+
 @media(max-width:768px){
+  .estoque-layout{grid-template-columns:1fr}
+  .filtros-sidebar{position:fixed;top:0;left:0;bottom:0;width:300px;z-index:200;border-radius:0;overflow-y:auto;transform:translateX(-100%);transition:transform .3s ease}
+  .filtros-sidebar.aberta{transform:translateX(0)}
+  .btn-filtros-mobile{display:block}
+  .estoque-page-section{padding-bottom:100px}
+
   .hero-logo{height:36px;top:16px;left:16px}
   .criativo{flex-direction:column!important;min-height:auto;max-height:none!important}
   .c-foto{min-height:260px;max-height:320px;order:1!important}
