@@ -60,7 +60,7 @@ function atualizarProgresso(atual, total) {
   }
 }
 
-// ── INICIAR: mostra 16 carros já e carrega o resto em segundo plano
+// ── INICIAR: mostra primeiros carros rápido e carrega o resto em segundo plano
 async function iniciar() {
   const loading = document.getElementById('loadingEstado');
   const erroEl  = document.getElementById('erroEstado');
@@ -71,7 +71,7 @@ async function iniciar() {
 
   try {
     // Primeira página — mostra rápido
-    const res1  = await fetch(`${API_LIONS}?pagina=1&quantidade=16`);
+    const res1  = await fetch(`${API_LIONS}?pagina=1&quantidade=18`);
     const data1 = await res1.json();
     const totalPaginas = data1.totalPaginas || 1;
 
@@ -79,13 +79,8 @@ async function iniciar() {
     todosOsCarros   = primeiros;
     carrosFiltrados = primeiros;
 
-    // Atualiza título do hero com número real do estoque
-    const totalReal = data1.totalRegistros || primeiros.length;
-    const tituloEm  = document.querySelector('.estoque-page-titulo em');
-    if (tituloEm) tituloEm.textContent = `+${totalReal} carros disponíveis`;
-
     loading.style.display = 'none';
-    document.getElementById('estoqueContador').textContent = `${totalReal} carros encontrados`;
+    document.getElementById('estoqueContador').textContent = `Carregando estoque…`;
     renderGrid(1);
 
     atualizarProgresso(1, totalPaginas);
@@ -112,13 +107,20 @@ async function carregarRestoEmSegundoPlano(totalPaginas) {
   carregamentoCompleto = true;
   popularFiltros(todosOsCarros);
 
-  // Só atualiza o grid se nenhum filtro estiver ativo
+  const total = todosOsCarros.length;
+
+  // Atualiza título do hero com número REAL do estoque
+  const tituloEm = document.querySelector('.estoque-page-titulo em');
+  if (tituloEm) tituloEm.textContent = `+${total} carros disponíveis`;
+
+  // Só atualiza grid/contador se nenhum filtro estiver ativo
   const temFiltro = filtros.busca || filtros.marca || filtros.modelo ||
     filtros.cor || filtros.combustivel || filtros.carrocerias.length > 0 || filtros._sliderMexido;
+
   if (!temFiltro) {
     carrosFiltrados = todosOsCarros;
-    document.getElementById('estoqueContador').textContent = `${todosOsCarros.length} carros encontrados`;
-    // Não re-renderiza o grid para não interromper o usuário
+    document.getElementById('estoqueContador').textContent = `${total} carros encontrados`;
+    renderGrid(paginaAtual); // re-renderiza com paginação completa
   }
 }
 
