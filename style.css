@@ -246,6 +246,15 @@ a{text-decoration:none;color:inherit}
 
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* Barra de progresso loading */
+.loading-progresso-box{display:flex;flex-direction:column;align-items:center;gap:14px;padding:60px 40px;text-align:center}
+.loading-logo{font-size:48px;animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.1);opacity:.8}}
+.progresso-txt{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;text-transform:uppercase;color:var(--branco)}
+.barra-progresso-bg{width:280px;height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden}
+.barra-progresso-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--vermelho-escuro),var(--vermelho));border-radius:3px;transition:width .3s ease}
+.progresso-sub{font-size:13px;color:#555}
+
 /* ══ SIDEBAR DE FILTROS (ESTOQUE) ══ */
 .estoque-layout{display:grid;grid-template-columns:280px 1fr;gap:32px;align-items:start}
 .estoque-main{min-width:0}

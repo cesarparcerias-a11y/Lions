@@ -122,10 +122,16 @@
           <!-- Contador -->
           <p class="estoque-contador" id="estoqueContador"></p>
 
-          <!-- Loading -->
+          <!-- Loading com barra de progresso -->
           <div class="loading-estado" id="loadingEstado">
-            <div class="spinner-grande"></div>
-            <p>Carregando estoque…</p>
+            <div class="loading-progresso-box">
+              <div class="loading-logo">🦁</div>
+              <p id="progressoTxt" class="progresso-txt">Carregando estoque… 0%</p>
+              <div class="barra-progresso-bg">
+                <div class="barra-progresso-fill" id="barraProgresso"></div>
+              </div>
+              <p class="progresso-sub">Buscando todos os carros disponíveis</p>
+            </div>
           </div>
 
           <!-- Erro -->
