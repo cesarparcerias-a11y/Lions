@@ -194,7 +194,7 @@
     <div class="preview-header">
       <div class="preview-header-texto">
         <p class="preview-label">🚗 Estoque real · Atualizado diariamente</p>
-        <h2 class="preview-titulo">Mais de 400 carros disponíveis.<br/><em>Qual é o seu?</em></h2>
+        <h2 class="preview-titulo"><span id="homeEstoqueNumero">Mais de 380</span> carros disponíveis.<br/><em>Qual é o seu?</em></h2>
       </div>
       <a href="estoque.html" class="btn-estoque-completo">Ver estoque completo →</a>
     </div>
@@ -348,5 +348,23 @@
 
   <script src="env.js"></script>
   <script src="script.js"></script>
+  <script>
+  // Atualiza número de carros na home a partir do Supabase
+  (async function() {
+    try {
+      const url = window.__ENV__?.SUPABASE_URL;
+      const key = window.__ENV__?.SUPABASE_ANON_KEY;
+      if (!url || !key) return;
+      const res  = await fetch(`${url}/rest/v1/config_site?chave=eq.total_estoque&select=valor`, {
+        headers: { apikey: key, Authorization: `Bearer ${key}` }
+      });
+      const data = await res.json();
+      if (data && data[0] && data[0].valor) {
+        const el = document.getElementById('homeEstoqueNumero');
+        if (el) el.textContent = data[0].valor;
+      }
+    } catch(e) {}
+  })();
+  </script>
 </body>
 </html>

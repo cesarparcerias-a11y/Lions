@@ -109,9 +109,12 @@ async function carregarRestoEmSegundoPlano(totalPaginas) {
 
   const total = todosOsCarros.length;
 
-  // Atualiza título do hero com número REAL do estoque
+  // Atualiza título da página estoque com número real
   const tituloEm = document.querySelector('.estoque-page-titulo em');
   if (tituloEm) tituloEm.textContent = `+${total} carros disponíveis`;
+
+  // Salva o total no Supabase para a home ler
+  salvarTotalNoSupabase(total);
 
   // Gera bloco SEO com todos os carros para o Google indexar
   gerarSEOCarros(todosOsCarros);
@@ -442,6 +445,23 @@ document.getElementById('popupEnviar').addEventListener('click', async function(
     erro.textContent = 'Erro ao enviar. Tente novamente.'; erro.style.display = 'block';
   }
 });
+
+// ── Salva total do estoque no Supabase (para a home ler)
+async function salvarTotalNoSupabase(total) {
+  try {
+    if (!SUPABASE_URL || !SUPABASE_KEY) return;
+    await fetch(`${SUPABASE_URL}/rest/v1/config_site`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify({ chave: 'total_estoque', valor: `+${total} carros disponíveis` })
+    });
+  } catch(e) {}
+}
 
 // ── Gerar bloco SEO com carros reais para indexação do Google
 function gerarSEOCarros(carros) {
