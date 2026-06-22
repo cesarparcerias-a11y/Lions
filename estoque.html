@@ -36,20 +36,35 @@
     </div>
   </section>
 
+  <!-- BARRA MOBILE: FILTRO + BUSCA (visível só no celular) -->
+  <div class="mobile-topbar">
+    <button class="mobile-btn-filtro" id="btnFiltrosMobile">⚙️ Filtro</button>
+    <input type="text" id="buscaInputMobile" class="mobile-busca" placeholder="🔍 Pesquisar…" />
+  </div>
+
   <!-- LAYOUT COM SIDEBAR -->
   <section class="estoque-page-section">
     <div class="container">
       <div class="estoque-layout">
 
         <!-- SIDEBAR DE FILTROS -->
-        <aside class="filtros-sidebar">
+        <aside class="filtros-sidebar" id="filtrosSidebar">
+
+          <!-- Barra de progresso do carregamento (dentro da sidebar) -->
+          <div class="sidebar-progresso" id="sidebarProgresso">
+            <div class="sidebar-progresso-bar">
+              <div class="sidebar-progresso-fill" id="barraProgresso"></div>
+            </div>
+            <span class="sidebar-progresso-txt" id="progressoTxt">Carregando estoque…</span>
+          </div>
+
           <div class="sidebar-header">
             <span class="sidebar-titulo">Filtros</span>
             <button class="btn-limpar-filtros" id="btnLimparFiltros">Limpar</button>
           </div>
 
-          <!-- Busca -->
-          <div class="sidebar-grupo">
+          <!-- Busca (só desktop — no mobile usa a topbar) -->
+          <div class="sidebar-grupo sidebar-busca-desktop">
             <input type="text" id="buscaInput" class="busca-input" placeholder="🔍  Buscar…" />
           </div>
 
@@ -114,30 +129,30 @@
             </div>
           </div>
 
+          <!-- Botão fechar sidebar no mobile -->
+          <button class="btn-fechar-sidebar" id="btnFecharSidebar">✕ Fechar filtros</button>
+
         </aside>
+
+        <!-- OVERLAY para fechar sidebar no mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
         <!-- ÁREA PRINCIPAL -->
         <div class="estoque-main">
 
           <!-- Contador -->
-          <p class="estoque-contador" id="estoqueContador"></p>
+          <p class="estoque-contador" id="estoqueContador">Carregando…</p>
 
-          <!-- Loading com barra de progresso -->
+          <!-- Loading inicial (spinner simples, some quando os primeiros carros chegam) -->
           <div class="loading-estado" id="loadingEstado">
-            <div class="loading-progresso-box">
-              <div class="loading-logo">🦁</div>
-              <p id="progressoTxt" class="progresso-txt">Carregando estoque… 0%</p>
-              <div class="barra-progresso-bg">
-                <div class="barra-progresso-fill" id="barraProgresso"></div>
-              </div>
-              <p class="progresso-sub">Buscando todos os carros disponíveis</p>
-            </div>
+            <div class="spinner-grande"></div>
+            <p>Buscando carros…</p>
           </div>
 
           <!-- Erro -->
           <div class="erro-estado" id="erroEstado" style="display:none;">
             <p>⚠️ Não foi possível carregar o estoque agora.</p>
-            <button class="btn-tentar" onclick="carregarPagina(1)">Tentar novamente</button>
+            <button class="btn-tentar" onclick="iniciar()">Tentar novamente</button>
           </div>
 
           <!-- Grid -->
@@ -150,10 +165,6 @@
       </div>
     </div>
   </section>
-
-  <!-- Botão mobile para abrir filtros -->
-  <button class="btn-filtros-mobile" id="btnFiltrosMobile">⚙️ Filtros</button>
-  <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
   <!-- POPUP DO CARRO -->
   <div class="popup-overlay" id="popupOverlay">

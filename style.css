@@ -255,6 +255,9 @@ a{text-decoration:none;color:inherit}
 .barra-progresso-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--vermelho-escuro),var(--vermelho));border-radius:3px;transition:width .3s ease}
 .progresso-sub{font-size:13px;color:#555}
 
+/* ══ TOPBAR MOBILE (filtro + busca) ══ */
+.mobile-topbar{display:none}
+
 /* ══ SIDEBAR DE FILTROS (ESTOQUE) ══ */
 .estoque-layout{display:grid;grid-template-columns:280px 1fr;gap:32px;align-items:start}
 .estoque-main{min-width:0}
@@ -264,6 +267,12 @@ a{text-decoration:none;color:inherit}
 .sidebar-titulo{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
 .btn-limpar-filtros{background:transparent;border:1px solid rgba(255,255,255,.15);border-radius:6px;color:var(--cinza);font-size:12px;padding:5px 12px;cursor:pointer;transition:all .2s}
 .btn-limpar-filtros:hover{border-color:var(--vermelho);color:var(--vermelho)}
+
+/* Barra de progresso dentro da sidebar */
+.sidebar-progresso{margin-bottom:16px;display:none}
+.sidebar-progresso-bar{height:4px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;margin-bottom:6px}
+.sidebar-progresso-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--vermelho-escuro),var(--vermelho));border-radius:2px;transition:width .3s ease}
+.sidebar-progresso-txt{font-size:11px;color:#555}
 
 .sidebar-grupo{margin-bottom:20px}
 .sidebar-label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#777;margin-bottom:8px}
@@ -288,17 +297,33 @@ a{text-decoration:none;color:inherit}
 .checkbox-item input[type=checkbox]:checked{background:var(--vermelho);border-color:var(--vermelho)}
 .checkbox-item input[type=checkbox]:checked::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:10px;color:#fff;font-weight:700}
 
-/* Botão mobile filtros */
-.btn-filtros-mobile{display:none;position:fixed;bottom:24px;right:24px;background:var(--vermelho);color:var(--branco);border:none;border-radius:100px;padding:14px 22px;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:700;text-transform:uppercase;cursor:pointer;z-index:100;box-shadow:0 4px 20px rgba(200,16,46,.5)}
+/* Botão fechar sidebar (mobile) */
+.btn-fechar-sidebar{display:none;width:100%;margin-top:16px;background:rgba(255,255,255,.06);border:1px solid var(--borda);border-radius:8px;color:var(--cinza);font-size:14px;padding:12px;cursor:pointer}
+
+/* Overlay */
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:199;backdrop-filter:blur(3px)}
 .sidebar-overlay.ativo{display:block}
 
 @media(max-width:768px){
   .estoque-layout{grid-template-columns:1fr}
+  /* Topbar mobile: filtro + busca */
+  .mobile-topbar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--preto-medio);border-bottom:1px solid var(--borda);position:sticky;top:0;z-index:90}
+  .mobile-btn-filtro{background:var(--preto-card);border:1px solid var(--borda);border-radius:8px;color:var(--branco);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;padding:10px 16px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+  .mobile-busca{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:10px 14px;font-family:'Barlow',sans-serif;font-size:14px;color:var(--branco);outline:none}
+  .mobile-busca::placeholder{color:#555}
+  .mobile-busca:focus{border-color:var(--vermelho)}
+  /* Busca desktop some no mobile */
+  .sidebar-busca-desktop{display:none}
+  /* Sidebar vira painel deslizante */
   .filtros-sidebar{position:fixed;top:0;left:0;bottom:0;width:300px;z-index:200;border-radius:0;overflow-y:auto;transform:translateX(-100%);transition:transform .3s ease}
   .filtros-sidebar.aberta{transform:translateX(0)}
-  .btn-filtros-mobile{display:block}
-  .estoque-page-section{padding-bottom:100px}
+  .btn-fechar-sidebar{display:block}
+  /* 1 coluna no mobile */
+  .estoque-page-grid{grid-template-columns:1fr!important}
+  .ep-card{display:grid;grid-template-columns:120px 1fr;border-radius:12px;overflow:hidden}
+  .ep-foto{height:auto;min-height:100px}
+  .ep-info{padding:12px}
+  .ep-modelo{font-size:15px}
 
   .hero-logo{height:36px;top:16px;left:16px}
   .criativo{flex-direction:column!important;min-height:auto;max-height:none!important}
