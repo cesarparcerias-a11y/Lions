@@ -428,16 +428,25 @@ document.getElementById('popupEnviar').addEventListener('click', async function(
     erro.textContent = 'WhatsApp inválido.'; erro.style.display = 'block'; return;
   }
   this.classList.add('loading');
+  const wppComCodigo = '55' + wppLimpo; // garante +55 para o Pipefy
   const descricao = `Cliente tem interesse em: ${v.marca} ${v.modelo} | ${v.ano_fabricacao}/${v.ano_modelo} | ${formatKm(v.km)} | ${v.cor} | Loja: ${loja}`;
   const payloadSupabase = { nome_cliente:nome, whatsapp_cliente:wppLimpo, email_cliente:email, loja, descricao, matricula_parceiro:MATRICULA_PARCEIRO, email_parceiro:EMAIL_PARCEIRO, origem:'estoque-cesar', criado_em:new Date().toISOString() };
-  const payloadWebhook  = { nome_cliente:nome, whatsapp_cliente:wppLimpo, loja, descricao, matricula_parceiro:MATRICULA_PARCEIRO, email_parceiro:EMAIL_PARCEIRO, origem:'estoque-cesar', criado_em:new Date().toISOString() };
+  const payloadWebhook  = { nome_cliente:nome, whatsapp_cliente:wppComCodigo, loja, descricao, matricula_parceiro:MATRICULA_PARCEIRO, email_parceiro:EMAIL_PARCEIRO, origem:'estoque-cesar', criado_em:new Date().toISOString() };
   try {
-    if (SUPABASE_URL && SUPABASE_KEY)
-      await fetch(`${SUPABASE_URL}/rest/v1/leads`, { method:'POST',
-        headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Prefer':'return=minimal'},
-        body:JSON.stringify(payloadSupabase) });
-    if (WEBHOOK_URL)
-      await fetch(WEBHOOK_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payloadWebhook) });
+    // Supabase — salva independente do webhook
+    if (SUPABASE_URL && SUPABASE_KEY) {
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/leads`, { method:'POST',
+          headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Prefer':'return=minimal'},
+          body:JSON.stringify(payloadSupabase) });
+      } catch(e) { console.warn('Supabase falhou:', e); }
+    }
+    // Webhook n8n → Pipefy
+    if (WEBHOOK_URL) {
+      try {
+        await fetch(WEBHOOK_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payloadWebhook) });
+      } catch(e) { console.warn('Webhook falhou:', e); }
+    }
     window.location.href = 'obrigado.html';
   } catch {
     this.classList.remove('loading');

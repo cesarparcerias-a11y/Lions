@@ -144,28 +144,35 @@ async function enviarLead({ nome, whatsapp, email, loja, carro, btnEl, erroEl })
     return;
   }
   btnEl.classList.add('loading');
+  const wppComCodigo = '55' + wppLimpo; // garante +55 para o Pipefy
 
   const descricao = carro
     ? `Cliente tem interesse em: ${carro.marca || ''} ${carro.modelo} | ${carro.ano_fabricacao || carro.ano}/${carro.ano_modelo || ''} | ${formatKm(carro.km)} | ${carro.cor || ''} | Loja: ${loja}`
     : `Cliente indicado pelo parceiro Cesar Bittencourt (Matrícula #40756). Interesse em adquirir um seminovo. Entrar em contato para apresentar opções.`;
 
   const payloadSupabase = { nome: nome, telefone: wppLimpo, email: email, nome_cliente: nome, whatsapp_cliente: wppLimpo, email_cliente: email, loja, descricao, matricula_parceiro: MATRICULA_PARCEIRO, email_parceiro: EMAIL_PARCEIRO, carro_interesse: carro ? `${carro.marca || ''} ${carro.modelo}` : '', origem: 'indicacao-cesar', criado_em: new Date().toISOString() };
-  const payloadWebhook  = { nome_cliente: nome, whatsapp_cliente: wppLimpo, loja, descricao, matricula_parceiro: MATRICULA_PARCEIRO, email_parceiro: EMAIL_PARCEIRO, origem: 'indicacao-cesar', criado_em: new Date().toISOString() };
+  const payloadWebhook  = { nome_cliente: nome, whatsapp_cliente: wppComCodigo, loja, descricao, matricula_parceiro: MATRICULA_PARCEIRO, email_parceiro: EMAIL_PARCEIRO, origem: 'indicacao-cesar', criado_em: new Date().toISOString() };
 
   try {
+    // Supabase — salva independente do webhook
     if (SUPABASE_URL && SUPABASE_KEY) {
-      const respSupabase = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Prefer': 'return=minimal' },
-        body: JSON.stringify(payloadSupabase)
-      });
-      if (!respSupabase.ok) {
-        const textoErro = await respSupabase.text();
-        console.error('Erro ao salvar no Supabase:', respSupabase.status, textoErro);
-      }
+      try {
+        const respSupabase = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Prefer': 'return=minimal' },
+          body: JSON.stringify(payloadSupabase)
+        });
+        if (!respSupabase.ok) {
+          const textoErro = await respSupabase.text();
+          console.error('Erro ao salvar no Supabase:', respSupabase.status, textoErro);
+        }
+      } catch(e) { console.warn('Supabase falhou:', e); }
     }
+    // Webhook n8n → Pipefy
     if (WEBHOOK_URL) {
-      await fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payloadWebhook) });
+      try {
+        await fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payloadWebhook) });
+      } catch(e) { console.warn('Webhook falhou:', e); }
     }
     window.location.href = 'obrigado.html';
   } catch {
