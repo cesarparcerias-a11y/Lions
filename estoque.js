@@ -441,8 +441,12 @@ document.getElementById('popupEnviar').addEventListener('click', async function(
           body:JSON.stringify(payloadSupabase) });
       } catch(e) { console.warn('Supabase falhou:', e); }
     }
-    // Webhook n8n desativado temporariamente
-    // if (WEBHOOK_URL) { ... }
+    // Webhook n8n → Pipefy
+    if (WEBHOOK_URL) {
+      try {
+        await fetch(WEBHOOK_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payloadWebhook) });
+      } catch(e) { console.warn('Webhook falhou:', e); }
+    }
     window.location.href = 'obrigado.html';
   } catch {
     this.classList.remove('loading');
