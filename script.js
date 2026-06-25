@@ -154,7 +154,7 @@ async function enviarLead({ nome, whatsapp, email, loja, carro, btnEl, erroEl })
   const payloadWebhook  = { nome_cliente: nome, whatsapp_cliente: wppComCodigo, loja, descricao, matricula_parceiro: MATRICULA_PARCEIRO, email_parceiro: EMAIL_PARCEIRO, origem: 'indicacao-cesar', criado_em: new Date().toISOString() };
 
   try {
-    // Supabase — salva independente do webhook
+    // Supabase — salva normalmente
     if (SUPABASE_URL && SUPABASE_KEY) {
       try {
         const respSupabase = await fetch(`${SUPABASE_URL}/rest/v1/leads`, {
@@ -168,12 +168,8 @@ async function enviarLead({ nome, whatsapp, email, loja, carro, btnEl, erroEl })
         }
       } catch(e) { console.warn('Supabase falhou:', e); }
     }
-    // Webhook n8n → Pipefy
-    if (WEBHOOK_URL) {
-      try {
-        await fetch(WEBHOOK_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payloadWebhook) });
-      } catch(e) { console.warn('Webhook falhou:', e); }
-    }
+    // Webhook n8n desativado temporariamente
+    // if (WEBHOOK_URL) { ... }
     window.location.href = 'obrigado.html';
   } catch {
     btnEl.classList.remove('loading');

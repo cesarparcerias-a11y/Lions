@@ -433,7 +433,7 @@ document.getElementById('popupEnviar').addEventListener('click', async function(
   const payloadSupabase = { nome_cliente:nome, whatsapp_cliente:wppLimpo, email_cliente:email, loja, descricao, matricula_parceiro:MATRICULA_PARCEIRO, email_parceiro:EMAIL_PARCEIRO, origem:'estoque-cesar', criado_em:new Date().toISOString() };
   const payloadWebhook  = { nome_cliente:nome, whatsapp_cliente:wppComCodigo, loja, descricao, matricula_parceiro:MATRICULA_PARCEIRO, email_parceiro:EMAIL_PARCEIRO, origem:'estoque-cesar', criado_em:new Date().toISOString() };
   try {
-    // Supabase — salva independente do webhook
+    // Supabase — salva normalmente
     if (SUPABASE_URL && SUPABASE_KEY) {
       try {
         await fetch(`${SUPABASE_URL}/rest/v1/leads`, { method:'POST',
@@ -441,12 +441,8 @@ document.getElementById('popupEnviar').addEventListener('click', async function(
           body:JSON.stringify(payloadSupabase) });
       } catch(e) { console.warn('Supabase falhou:', e); }
     }
-    // Webhook n8n → Pipefy
-    if (WEBHOOK_URL) {
-      try {
-        await fetch(WEBHOOK_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payloadWebhook) });
-      } catch(e) { console.warn('Webhook falhou:', e); }
-    }
+    // Webhook n8n desativado temporariamente
+    // if (WEBHOOK_URL) { ... }
     window.location.href = 'obrigado.html';
   } catch {
     this.classList.remove('loading');
