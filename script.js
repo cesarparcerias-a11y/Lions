@@ -144,7 +144,7 @@ async function enviarLead({ nome, whatsapp, email, loja, carro, btnEl, erroEl })
     return;
   }
   btnEl.classList.add('loading');
-  const wppComCodigo = '55' + wppLimpo; // garante +55 para o Pipefy
+  const wppComCodigo = '+55' + wppLimpo; // garante +55 para o Pipefy
 
   const descricao = carro
     ? `Cliente tem interesse em: ${carro.marca || ''} ${carro.modelo} | ${carro.ano_fabricacao || carro.ano}/${carro.ano_modelo || ''} | ${formatKm(carro.km)} | ${carro.cor || ''} | Loja: ${loja}`

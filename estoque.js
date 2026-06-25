@@ -428,7 +428,7 @@ document.getElementById('popupEnviar').addEventListener('click', async function(
     erro.textContent = 'WhatsApp inválido.'; erro.style.display = 'block'; return;
   }
   this.classList.add('loading');
-  const wppComCodigo = '55' + wppLimpo; // garante +55 para o Pipefy
+  const wppComCodigo = '+55' + wppLimpo; // garante +55 para o Pipefy
   const descricao = `Cliente tem interesse em: ${v.marca} ${v.modelo} | ${v.ano_fabricacao}/${v.ano_modelo} | ${formatKm(v.km)} | ${v.cor} | Loja: ${loja}`;
   const payloadSupabase = { nome_cliente:nome, whatsapp_cliente:wppLimpo, email_cliente:email, loja, descricao, matricula_parceiro:MATRICULA_PARCEIRO, email_parceiro:EMAIL_PARCEIRO, origem:'estoque-cesar', criado_em:new Date().toISOString() };
   const payloadWebhook  = { nome_cliente:nome, whatsapp_cliente:wppComCodigo, loja, descricao, matricula_parceiro:MATRICULA_PARCEIRO, email_parceiro:EMAIL_PARCEIRO, origem:'estoque-cesar', criado_em:new Date().toISOString() };
