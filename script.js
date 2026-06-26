@@ -151,7 +151,7 @@ async function enviarLead({ nome, whatsapp, email, loja, carro, btnEl, erroEl })
     : `Cliente indicado pelo parceiro Cesar Bittencourt (Matrícula #40756). Interesse em adquirir um seminovo. Entrar em contato para apresentar opções.`;
 
   const payloadSupabase = { nome: nome, telefone: wppLimpo, email: email, nome_cliente: nome, whatsapp_cliente: wppLimpo, email_cliente: email, loja, descricao, matricula_parceiro: MATRICULA_PARCEIRO, email_parceiro: EMAIL_PARCEIRO, carro_interesse: carro ? `${carro.marca || ''} ${carro.modelo}` : '', origem: 'indicacao-cesar', criado_em: new Date().toISOString() };
-  const payloadWebhook  = { nome_cliente: nome, whatsapp_cliente: wppComCodigo, loja, descricao, matricula_parceiro: MATRICULA_PARCEIRO, email_parceiro: EMAIL_PARCEIRO, origem: 'indicacao-cesar', criado_em: new Date().toISOString() };
+  const payloadWebhook  = { nome_cliente: nome, whatsapp_cliente: wppComCodigo, email_cliente: email, loja, descricao, matricula_parceiro: MATRICULA_PARCEIRO, email_parceiro: EMAIL_PARCEIRO, origem: 'indicacao-cesar', criado_em: new Date().toISOString() };
 
   try {
     // Supabase — salva normalmente
